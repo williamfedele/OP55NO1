@@ -8,7 +8,7 @@ enum class Test(val v: String) {
 }
 
 fun main () {
-    val file1 = File("src/lexer/testfiles/testing.src")
+    val file1 = File("src/lexer/testfiles/lexpositivegrading.src")
     val file2 = File("src/lexer/testfiles/lexnegativegrading.src")
 
     val reader = BufferedReader(file1.reader())
