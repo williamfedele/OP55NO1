@@ -176,6 +176,7 @@ class Lexer(private val r: Reader) {
 
                     while (true) {
                         if (peek().isDigit()) {
+                            // a number starting with 0 is only valid with a decimal following
                             if (zeroStart && !hasDecimal)
                                 valid = false
                             n += poll()
@@ -183,12 +184,15 @@ class Lexer(private val r: Reader) {
                         else if (peek() == 'e') {
                             n += poll()
                             hasE = true
-                            if (peek() == '+' || peek() == '-') {
+                            // e can be followed by either a sign or a non-zero digit (implies positive)
+                            if (peek() == '+' || peek() == '-')
                                 n += poll()
-                            }
                             else if (peek().isDigit()) {
-                                if (peek() == '0')
+                                val t = poll()
+                                n += t
+                                if (t == '0') {
                                     valid = false
+                                }
                             }
                             else
                                 valid = false
@@ -218,10 +222,10 @@ class Lexer(private val r: Reader) {
 
                 }
                 else -> {
-                    if (c == '\uFFFF')
-                        return Token(TokenType.EOF, line)
+                    return if (c == '\uFFFF')
+                        Token(TokenType.EOF, line)
                     else
-                        return Token(TokenType.INVALIDCHAR, line, c.toString())
+                        Token(TokenType.INVALIDCHAR, line, c.toString())
                 }
             }
         }

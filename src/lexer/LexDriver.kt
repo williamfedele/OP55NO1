@@ -11,7 +11,7 @@ fun main () {
     val file1 = File("src/lexer/testfiles/lexpositivegrading.src")
     val file2 = File("src/lexer/testfiles/lexnegativegrading.src")
 
-    val reader = BufferedReader(file2.reader())
+    val reader = BufferedReader(file1.reader())
 
     val lex = Lexer(reader)
     val tokens = ArrayList<Token>()
