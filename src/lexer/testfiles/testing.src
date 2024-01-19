@@ -1,6 +1,34 @@
-==	+	|	(	;
-<>	-	&	)	,
-<	*	!	{	.
->	/		}	:
-<=	=		[	::
->=			]	->
+==	+	|	(	;	if 	public	read
+<>	-	&	)	,	then	private	write
+<	*	!	{	.	else	func	return
+>	/		}	:	integer	var	self
+<=	=		[	::	float	struct	inherits
+>=			]	->	void	while	let
+						func	impl
+
+
+
+
+
+abc
+abc1
+a1bc
+abc_1abc
+abc1_abc
+
+// this is an inline comment
+
+/* this is a single line block comment */
+
+/* this is a
+multiple line
+block comment
+*/
+
+/* this is an imbricated
+/* block comment
+*/
+*/
+
+
+

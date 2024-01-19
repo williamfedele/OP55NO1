@@ -1,12 +1,169 @@
 package lexer
 
 import java.io.Reader
-import kotlin.text.substring
 
-class Lexer(val r: Reader) {
+class Lexer(private val r: Reader) {
     private var line = 1
 
     fun nextToken(): Token {
+        while (true) {
+            var c = poll()
+
+            // whitespace is not tokenized, skip until non-whitespace found
+            while (c.isWhitespace()) {
+                // increment line tracker
+                if(c == '\n')
+                    line++
+
+                c = poll()
+            }
+
+            when (c) {
+                '(' -> return Token(TokenType.OPENPAR, line)
+                ')' -> return Token(TokenType.CLOSEPAR, line)
+                '{' -> return Token(TokenType.OPENCUBR, line)
+                '}' -> return Token(TokenType.CLOSECUBR, line)
+                '[' -> return Token(TokenType.OPENSQBR, line)
+                ']' -> return Token(TokenType.CLOSESQBR, line)
+                '+' -> return Token(TokenType.PLUS, line)
+                '*' -> return Token(TokenType.MULT, line)
+                '|' -> return Token(TokenType.OR, line)
+                '&' -> return Token(TokenType.AND, line)
+                '!' -> return Token(TokenType.NOT, line)
+                ',' -> return Token(TokenType.COMMA, line)
+                '.' -> return Token(TokenType.DOT, line)
+                ';' -> return Token(TokenType.SEMI, line)
+                ':' -> {
+                    when (peek()) {
+                        ':' -> {
+                            poll()
+                            return Token(TokenType.COLONCOLON, line)
+                        }
+                        else ->  return Token(TokenType.COLON, line)
+                    }
+                }
+                '-' -> {
+                    when (peek()) {
+                        '>' -> {
+                            poll()
+                            return Token(TokenType.ARROW, line)
+                        }
+                        else -> return Token(TokenType.MINUS, line)
+                    }
+                }
+                '=' -> {
+                    when (peek()) {
+                        '=' -> {
+                            poll()
+                            return Token(TokenType.EQ, line)
+                        }
+                        else -> return Token(TokenType.ASSIGN, line)
+                    }
+                }
+                '>' -> {
+                    when (peek()) {
+                        '=' -> {
+                            poll()
+                            return Token(TokenType.GEQ, line)
+                        }
+                        else -> return Token(TokenType.GT, line)
+                    }
+                }
+                '<' -> {
+                    when (peek()) {
+                        '>' -> {
+                            poll()
+                            return Token(TokenType.NOTEQ, line)
+                        }
+                        '=' -> {
+                            poll()
+                            return Token(TokenType.LEQ, line)
+                        }
+                        else -> return Token(TokenType.LT, line)
+                    }
+                }
+                '/' -> {
+                    when (peek()) {
+                        '/' -> {
+                            poll()
+                            var cmt = "//"
+                            while (true) {
+                                val t = poll()
+                                if (isNewline(t))
+                                    break
+                                cmt += t
+                            }
+                            return Token(TokenType.INLINECMT, line++, cmt)
+                        }
+                        '*' -> {
+                            poll()
+                            var cmt = "/*"
+                            val lineStart = line
+                            var openCount = 1
+                            while (true) {
+                                // escape newline
+                                val t = poll()
+                                if (isNewline(t)) {
+                                    cmt += "\\n"
+                                    line++
+                                }
+                                else
+                                    cmt += t
+
+                                when (cmt.takeLast(2)) {
+                                    "*/" -> {
+                                        openCount--
+                                        if (openCount == 0)
+                                            break
+                                    }
+                                    "/*" -> {
+                                        openCount++
+                                    }
+                                    else -> continue
+                                }
+                            }
+                            // TODO potential error if EOF reached and block comment wasnt closed
+                            return Token(TokenType.BLOCKCMT, lineStart, cmt)
+                        }
+                        else -> return Token(TokenType.DIV, line)
+                    }
+                }
+                in 'a'..'z' -> {
+                    var id = c.toString()
+                    while (true) {
+                        if (!peek().isLetterOrDigit() && peek() != '_')
+                            break
+                        val t = poll()
+                        id += t
+                    }
+                    when (id) {
+                        "if" -> return Token(TokenType.IF, line)
+                        "public" -> return Token(TokenType.PUBLIC, line)
+                        "read" -> return Token(TokenType.READ, line)
+                        "then" -> return Token(TokenType.THEN, line)
+                        "private" -> return Token(TokenType.PRIVATE, line)
+                        "write" -> return Token(TokenType.WRITE, line)
+                        "else" -> return Token(TokenType.ELSE, line)
+                        "func" -> return Token(TokenType.FUNC, line)
+                        "return" -> return Token(TokenType.RETURN, line)
+                        "integer" -> return Token(TokenType.INT, line)
+                        "var" -> return Token(TokenType.VAR, line)
+                        "self" -> return Token(TokenType.SELF, line)
+                        "float" -> return Token(TokenType.FLOAT, line)
+                        "struct" -> return Token(TokenType.STRUCT, line)
+                        "inherits" -> return Token(TokenType.INHERITS, line)
+                        "void" -> return Token(TokenType.VOID, line)
+                        "while" -> return Token(TokenType.WHILE, line)
+                        "let" -> return Token(TokenType.LET, line)
+                        "impl" -> return Token(TokenType.IMPL, line)
+                        else -> return Token(TokenType.ID, line, id)
+                    }
+                }
+                else -> return Token(TokenType.EOF, line)
+            }
+        }
+    }
+    fun nextToken1(): Token {
         var next = r.read()
 
         // whitespace is not tokenized, skip until non-whitespace found
@@ -22,169 +179,7 @@ class Lexer(val r: Reader) {
             return Token(TokenType.EOF,0)
 
         when (next.toChar()) {
-            '+' -> return Token(TokenType.PLUS, line)
-            '*' -> return Token(TokenType.MULT, line)
-            '|' -> return Token(TokenType.OR, line)
-            '&' -> return Token(TokenType.AND, line)
-            '!' -> return Token(TokenType.NOT, line)
-            '(' -> return Token(TokenType.OPENPAR, line)
-            ')' -> return Token(TokenType.CLOSEPAR, line)
-            '{' -> return Token(TokenType.OPENCUBR, line)
-            '}' -> return Token(TokenType.CLOSECUBR, line)
-            '[' -> return Token(TokenType.OPENSQBR, line)
-            ']' -> return Token(TokenType.CLOSESQBR, line)
-            ',' -> return Token(TokenType.COMMA, line)
-            '.' -> return Token(TokenType.DOT, line)
-            ';' -> return Token(TokenType.SEMI, line)
-            ':' -> {
-                r.mark(1)
-                val temp = r.read().toChar()
-                if(temp == ':')
-                    return Token(TokenType.COLONCOLON, line)
-                else {
-                    r.reset()
-                    return Token(TokenType.COLON, line)
-                }
-            }
-            '/' -> {
-                // TODO if there are two slashes, create an inlinecmt
-                r.mark(1)
-                var temp = r.read().toChar()
-                if (temp == '/') {
-                    // inlinecmt
-                    var acc : String = next.toChar().toString()
-                    while (temp != '\n') {
-                        acc += temp
-                        temp = r.read().toChar()
-                    }
 
-                    return Token(TokenType.INLINECMT, line++, acc)
-
-                }
-                else if (temp == '*') {
-                    // block comment
-                    var acc : String = next.toChar().toString()
-                    acc += temp
-                    var temp2 = r.read()
-                    var counter = 1
-                    while (temp2 != -1) {
-                        if (temp2.toChar() == '\n') {
-                            acc += "\\n"
-                        }
-                        else
-                            acc += temp2.toChar()
-                        if (acc[acc.length-2].toString() + acc[acc.length-1].toString() == "*/") {
-                            counter--
-                            if (counter == 0)
-                                break
-                        }
-                        if (acc[acc.length-2].toString() + acc[acc.length-1].toString() == "/*")
-                            counter++
-
-                        temp2 = r.read()
-                    }
-                    return if (counter != 0) {
-                        // TODO handle error, block comment wasnt closed
-                        Token(TokenType.EOF, line)
-                    } else
-                        Token(TokenType.BLOCKCMT, line, acc)
-                }
-                else {
-                    r.reset()
-                    return Token(TokenType.DIV, line)
-                }
-            }
-            '-' ->  {
-                // check if - or ->
-                r.mark(1)
-                val temp = r.read().toChar()
-                if(temp == '>')
-                    return Token(TokenType.ARROW, line)
-                else {
-                    r.reset()
-                    return Token(TokenType.MINUS, line)
-                }
-            }
-            '=' -> {
-                // check if = or ==
-                r.mark(1000)
-                val temp = r.read().toChar()
-                if (temp == '=')
-                    return Token(TokenType.EQ, line)
-                else {
-                    r.reset()
-                    return Token(TokenType.ASSIGN, line)
-                }
-            }
-            '<' -> {
-                // check if < or <> or <=
-                r.mark(1)
-                val temp = r.read().toChar()
-                if (temp == '>')
-                    return Token(TokenType.NOTEQ, line)
-                else if (temp == '=')
-                    return Token(TokenType.LEQ, line)
-                else {
-                    r.reset()
-                    return Token(TokenType.LT, line)
-                }
-            }
-            '>' -> {
-                // check if > or >=
-                r.mark(1)
-                val temp = r.read().toChar()
-                if (temp == '=')
-                    return Token(TokenType.GEQ, line)
-                else {
-                    r.reset()
-                    return Token(TokenType.GT, line)
-                }
-            }
-            in 'a'..'z' -> {
-                /*
-                If the first token is a letter
-                Continue reading while a letter or number is found. Else (symbol, whitespace) stop and assess.
-                Check if it matches a reserved word
-                If not, then it must be an id (mix of letters/numbers, starting with letter)
-                */
-
-                var acc : String = ""
-                // TODO check what characters are valid in an ID, added underscore below
-                while(next.toChar().isLetterOrDigit() || next.toChar() == '_') {
-                    //build string
-                    acc += next.toChar()
-
-                    //mark position incase non letter/digit found to rollback
-                    r.mark(1)
-
-                    //get next char
-                    next = r.read()
-                }
-                r.reset()
-
-                when (acc.lowercase()) {
-                    "if" -> return Token(TokenType.IF, line)
-                    "public" -> return Token(TokenType.PUBLIC, line)
-                    "read" -> return Token(TokenType.READ, line)
-                    "then" -> return Token(TokenType.THEN, line)
-                    "private" -> return Token(TokenType.PRIVATE, line)
-                    "write" -> return Token(TokenType.WRITE, line)
-                    "else" -> return Token(TokenType.ELSE, line)
-                    "func" -> return Token(TokenType.FUNC, line)
-                    "return" -> return Token(TokenType.RETURN, line)
-                    "integer" -> return Token(TokenType.INT, line)
-                    "var" -> return Token(TokenType.VAR, line)
-                    "self" -> return Token(TokenType.SELF, line)
-                    "float" -> return Token(TokenType.FLOAT, line)
-                    "struct" -> return Token(TokenType.STRUCT, line)
-                    "inherits" -> return Token(TokenType.INHERITS, line)
-                    "void" -> return Token(TokenType.VOID, line)
-                    "while" -> return Token(TokenType.WHILE, line)
-                    "let" -> return Token(TokenType.LET, line)
-                    "impl" -> return Token(TokenType.IMPL, line)
-                    else -> return Token(TokenType.ID, line, acc)
-                }
-            }
             in '1'..'9' -> {
                 /*
                 If the first token is non zero int. Continue while ints are found.
@@ -242,4 +237,30 @@ class Lexer(val r: Reader) {
 
         }
     }
+
+    // Peeks at the next character without moving position in a file reader
+    private fun peek(): Char{
+        r.mark(1)
+        val next = r.read().toChar()
+        r.reset()
+        return next
+    }
+
+    // Polls the next character in the file reader
+    private fun poll(): Char {
+        return r.read().toChar()
+    }
+
+    // Checks if there is a newline character. Detects CRLF, CR, LF.
+    private fun isNewline(t: Char): Boolean {
+        if (peek() == '\n') {
+            poll()
+            return true
+        }
+        else if (t == '\r' || t == '\n')
+            return true
+        else
+            return false
+    }
+
 }

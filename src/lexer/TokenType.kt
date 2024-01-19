@@ -8,5 +8,5 @@ enum class TokenType (val repr: String) {
     OPENPAR("("), CLOSEPAR(")"), OPENCUBR("{"), CLOSECUBR("}"), OPENSQBR("["), CLOSESQBR("]"),
     SEMI(";"), COMMA(","), DOT("."), COLON(":"), COLONCOLON("::"), ARROW("->"), IF("if"), THEN("then"), ELSE("else"), VOID("void"), PUBLIC("public"), PRIVATE("private"), FUNC("func"), STRUCT("struct"), WHILE("while"), READ("read"), WRITE("write"), RETURN("return"), SELF("self"), INHERITS("inherits"), LET("let"), IMPL("impl"),
     EOF(""),
-    INVALIDCHAR("invalidchar"), INVALIDNUM("invalidnum"), INVALIDID("invalidid")
+    INVALIDCHAR("invalidchar"), INVALIDNUM("invalidnum"), INVALIDID("invalidid"), ERROR("error")
 }
