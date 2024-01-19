@@ -128,7 +128,7 @@ class Lexer(private val r: Reader) {
                         else -> return Token(TokenType.DIV, line)
                     }
                 }
-                in 'a'..'z' -> {
+                in 'a'..'z', '_' -> {
                     var id = c.toString()
                     while (true) {
                         if (!peek().isLetterOrDigit() && peek() != '_')
@@ -156,85 +156,74 @@ class Lexer(private val r: Reader) {
                         "while" -> return Token(TokenType.WHILE, line)
                         "let" -> return Token(TokenType.LET, line)
                         "impl" -> return Token(TokenType.IMPL, line)
-                        else -> return Token(TokenType.ID, line, id)
+                        else -> {
+                            if (id[0] == '_')
+                                return Token(TokenType.INVALIDID, line, id)
+                            else
+                                return Token(TokenType.ID, line, id)
+                        }
                     }
                 }
-                else -> return Token(TokenType.EOF, line)
-            }
-        }
-    }
-    fun nextToken1(): Token {
-        var next = r.read()
+                in '0'..'9' -> {
+                    var n = c.toString()
+                    var valid = true
+                    var hasDecimal = false
+                    var hasLetter = false
+                    var hasE = false
+                    var zeroStart = false
+                    if (c == '0')
+                        zeroStart = true
 
-        // whitespace is not tokenized, skip until non-whitespace found
-        while(next.toChar().isWhitespace()) {
-            // increment line tracker
-            if(next.toChar() == '\n')
-                line++
+                    while (true) {
+                        if (peek().isDigit()) {
+                            if (zeroStart && !hasDecimal)
+                                valid = false
+                            n += poll()
+                        }
+                        else if (peek() == 'e') {
+                            n += poll()
+                            hasE = true
+                            if (peek() == '+' || peek() == '-') {
+                                n += poll()
+                            }
+                            else if (peek().isDigit()) {
+                                if (peek() == '0')
+                                    valid = false
+                            }
+                            else
+                                valid = false
+                        }
+                        else if (peek().isLetter()) {
+                            n += poll()
+                            hasLetter = true
+                            valid = false
+                        }
+                        else if (peek() == '.') {
+                            n += poll()
 
-            next = r.read()
-        }
-
-        if(next == -1)
-            return Token(TokenType.EOF,0)
-
-        when (next.toChar()) {
-
-            in '1'..'9' -> {
-                /*
-                If the first token is non zero int. Continue while ints are found.
-                If a dot is found, there must be no trailing zeroes in decimals.
-                If ‘e’ is found, next char must be plus or minus, next char must be non zero
-                 */
-                var temp = next.toChar()
-                var acc = ""
-                while (!temp.isWhitespace()) {
-                    acc += temp
-                    temp = r.read().toChar()
-                }
-
-                if (temp == '\n')
-                    line++
-                return Token(TokenType.INTNUM, line, acc)
-            }
-            '0' -> {
-                /*
-                If the first token is 0, the next token must be whitespace.
-                If not, continue until whitespace and report invalid number.
-                */
-                r.mark(1)
-                var temp = r.read().toChar()
-                if(temp.isDigit()) {
-                    // TODO numbers cannot start with 0
-                    return Token(TokenType.EOF, line)
-                }
-                else if (temp.isLetter()) {
-                    // error, id starting with number
-                    
-                    var acc = next.toChar().toString()
-                    while (!temp.isWhitespace()) {
-                        acc += temp
-                        temp = r.read().toChar()
+                            if (!hasDecimal)
+                                hasDecimal = true
+                            else
+                                valid = false
+                        }
+                        else
+                            break
                     }
-                    return Token(TokenType.INVALIDID, line, acc)
-                }
-                else if (temp == '.') {
-                    // TODO decimal check
-                    return Token(TokenType.EOF, line)
-                }
-                else if (temp.isWhitespace()) {
-                    r.reset()
-                    return Token(TokenType.INTNUM, line, next.toChar().toString())
-                }
-                else {
-                    return return Token(TokenType.EOF, line)
-                }
-            }
-            else -> {
-                // anything else is invalid
-                return Token(TokenType.EOF, line)
-            }
+                    if (hasLetter)
+                        return Token(TokenType.INVALIDID, line, n)
+                    else if (!valid)
+                        return Token(TokenType.INVALIDNUM, line, n)
+                    else if (hasDecimal || hasE)
+                        return Token(TokenType.FLOATNUM, line, n)
 
+                }
+                else -> {
+                    if (c == '\uFFFF')
+                        return Token(TokenType.EOF, line)
+                    else
+                        return Token(TokenType.INVALIDCHAR, line, c.toString())
+                }
+            }
         }
     }
 
