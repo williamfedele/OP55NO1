@@ -219,6 +219,8 @@ class Lexer(private val r: Reader) {
                         return Token(TokenType.INVALIDNUM, line, n)
                     else if (hasDecimal || hasE)
                         return Token(TokenType.FLOATNUM, line, n)
+                    else
+                        return Token(TokenType.INTNUM, line, n)
 
                 }
                 else -> {
