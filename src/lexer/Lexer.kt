@@ -128,7 +128,7 @@ class Lexer(private val r: Reader) {
                         else -> return Token(TokenType.DIV, line)
                     }
                 }
-                in 'a'..'z', '_' -> {
+                in 'a'..'z', in 'A'..'Z', '_' -> {
                     var id = c.toString()
                     while (true) {
                         if (!peek().isLetterOrDigit() && peek() != '_')
@@ -168,9 +168,9 @@ class Lexer(private val r: Reader) {
                     var n = c.toString()
                     var valid = true
                     var hasDecimal = false
-                    var hasLetter = false
                     var hasE = false
                     var zeroStart = false
+
                     if (c == '0')
                         zeroStart = true
 
@@ -183,11 +183,17 @@ class Lexer(private val r: Reader) {
                         }
                         else if (peek() == 'e') {
                             n += poll()
-                            hasE = true
+                            // only 1 'e' is allowed
+                            if(!hasE)
+                                hasE = true
+                            else
+                                valid = false
+
                             // e can be followed by either a sign or a non-zero digit (implies positive)
                             if (peek() == '+' || peek() == '-')
                                 n += poll()
                             else if (peek().isDigit()) {
+                                // 'e' can be followed by a non-zero integer implying positive
                                 val t = poll()
                                 n += t
                                 if (t == '0') {
@@ -198,13 +204,14 @@ class Lexer(private val r: Reader) {
                                 valid = false
                         }
                         else if (peek().isLetter()) {
+                            // any letter not 'e' is invalid in a number
                             n += poll()
-                            hasLetter = true
                             valid = false
                         }
                         else if (peek() == '.') {
                             n += poll()
 
+                            // can only have one decimal
                             if (!hasDecimal)
                                 hasDecimal = true
                             else
@@ -212,10 +219,13 @@ class Lexer(private val r: Reader) {
                         }
                         else
                             break
+
                     }
-                    if (hasLetter)
-                        return Token(TokenType.INVALIDID, line, n)
-                    else if (!valid)
+
+                    if (n.last() == '0' && !hasE && hasDecimal)
+                        valid = false
+
+                    if (!valid)
                         return Token(TokenType.INVALIDNUM, line, n)
                     else if (hasDecimal || hasE)
                         return Token(TokenType.FLOATNUM, line, n)
