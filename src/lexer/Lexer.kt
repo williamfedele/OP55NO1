@@ -258,11 +258,11 @@ class Lexer(private val r: Reader) {
 
     // Checks if there is a newline character. Detects CRLF, CR, LF.
     private fun isNewline(t: Char): Boolean {
-        if (peek() == '\n') {
+        if (t == '\r' && peek() == '\n') { // windows
             poll()
             return true
         }
-        else if (t == '\r' || t == '\n')
+        else if (t == '\r' || t == '\n') // linux, mac, etc
             return true
         else
             return false
