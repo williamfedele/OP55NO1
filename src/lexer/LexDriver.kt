@@ -12,6 +12,7 @@ fun main () {
     for (file :String in files) {
         val reader = BufferedReader(File(inputPath+file+fileEnding).reader())
 
+        // extract all tokens from the current file
         val lex = Lexer(reader)
         val tokens = ArrayList<Token>()
         var token = lex.nextToken()
@@ -20,7 +21,10 @@ fun main () {
             token = lex.nextToken()
         }
 
-        //print the tokens
+        // print the extracted tokens
+        // file extensions:
+        //      .outlextokens = all tokens
+        //      .outlexerrors = only errors in a more human-readable way
         var line = tokens[0].line
 
         val outputTokenFile = File("$outputPath$file.outlextokens")
@@ -42,7 +46,5 @@ fun main () {
             }
         }
 
-
     }
-
 }

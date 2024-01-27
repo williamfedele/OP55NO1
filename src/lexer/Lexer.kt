@@ -122,7 +122,7 @@ class Lexer(private val r: Reader) {
                                     else -> continue
                                 }
                             }
-                            // TODO potential error if EOF reached and block comment wasnt closed
+
                             return Token(TokenType.BLOCKCMT, lineStart, cmt)
                         }
                         else -> return Token(TokenType.DIV, line)
@@ -130,12 +130,14 @@ class Lexer(private val r: Reader) {
                 }
                 in 'a'..'z', in 'A'..'Z', '_' -> {
                     var id = c.toString()
+                    // first letter indicated an id. keep reading alphanumerics
                     while (true) {
                         if (!peek().isLetterOrDigit() && peek() != '_')
                             break
                         val t = poll()
                         id += t
                     }
+                    // reserved words are special cases for id, check each before defaulting to id
                     when (id) {
                         "if" -> return Token(TokenType.IF, line)
                         "public" -> return Token(TokenType.PUBLIC, line)
@@ -184,7 +186,10 @@ class Lexer(private val r: Reader) {
                         else if (peek() == 'e') {
                             n += poll()
                             // only 1 'e' is allowed
-                            if(!hasE)
+                            if (hasE || (hasDecimal && n.last() == '0'))
+                                valid = false
+
+                            if (!hasE)
                                 hasE = true
                             else
                                 valid = false
@@ -193,7 +198,7 @@ class Lexer(private val r: Reader) {
                             if (peek() == '+' || peek() == '-')
                                 n += poll()
                             else if (peek().isDigit()) {
-                                // 'e' can be followed by a non-zero integer implying positive
+                                // e can be followed by a non-zero integer implying positive
                                 val t = poll()
                                 n += t
                                 if (t == '0') {
@@ -222,6 +227,7 @@ class Lexer(private val r: Reader) {
 
                     }
 
+                    // floats not in scientific notation cannot end in 0. ex: 1.20 should be 1.2
                     if (n.last() == '0' && !hasE && hasDecimal)
                         valid = false
 

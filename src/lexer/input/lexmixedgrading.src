@@ -5,8 +5,10 @@ this is a block comment containing an inline comment
 \\this is the inline comment
 */
 
+
 1.2000
 1.2000e01
+1.20e10
 1.2e01
 1.5e+1010
 12.340
@@ -16,9 +18,7 @@ this is a block comment containing an inline comment
 1.6e.32
 1.2e.02
 1.2e4.3e6
-
+1.2e40.2
 
 
 Abc123_a_2
-
-

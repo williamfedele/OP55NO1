@@ -22,12 +22,11 @@ enum class TokenType (val repr: String) {
     // Used to signal end of file. Discarded upon reading from lexer.
     EOF("");
 
-    fun getErrorTypes(): List<TokenType> {
+    private fun getErrorTypes(): List<TokenType> {
         return listOf(INVALIDCHAR, INVALIDNUM, INVALIDID)
     }
     fun isError(): Boolean {
         return this in getErrorTypes()
     }
-
 
 }
