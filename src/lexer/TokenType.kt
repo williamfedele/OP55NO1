@@ -20,7 +20,7 @@ enum class TokenType (val repr: String) {
     INVALIDCHAR("invalidchar"), INVALIDNUM("invalidnum"), INVALIDID("invalidid"),
 
     // Used to signal end of file. Discarded upon reading from lexer.
-    EOF("");
+    EOF("$");
 
     private fun getErrorTypes(): List<TokenType> {
         return listOf(INVALIDCHAR, INVALIDNUM, INVALIDID)

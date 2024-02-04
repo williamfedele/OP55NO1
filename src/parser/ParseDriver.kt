@@ -12,7 +12,11 @@ fun main() {
     val lex = Lexer(reader)
 
     val parser = Parser(lex, mapping.headers, mapping.map)
-    println(parser.parse())
+    if(parser.parse())
+        println("The file is valid.")
+    else
+        println("The file is not valid.")
+
 }
 
 fun readTable(file: File) : HeaderMapping {
