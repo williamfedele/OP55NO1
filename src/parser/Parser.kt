@@ -1,7 +1,6 @@
 package parser
 
 import lexer.Lexer
-import lexer.TokenType
 
 typealias Stack<T> = ArrayDeque<T>
 fun <T> Stack<T>.push(e: T) = addLast(e)
@@ -23,10 +22,9 @@ class Parser(private val l: Lexer,
         while (s.top() != "$") {
             val x = s.top()
 
-            if (a.type == TokenType.ID && a.lexeme == "printarray") {
+            if (a.line == 60) {
                 val i = 0
             }
-
 
             while (a.isComment())
                 a = l.nextToken()

@@ -1,4 +1,6 @@
-ADDOP -> plus  . 
+START -> PROG  .
+
+ADDOP -> plus  .
 ADDOP -> minus  . 
 ADDOP -> or  . 
 
@@ -129,9 +131,7 @@ RIGHTRECTERM ->  .
 RIGHTRECTERM -> MULTOP FACTOR RIGHTRECTERM  . 
 
 SIGN -> plus  . 
-SIGN -> minus  . 
-
-START -> PROG  . 
+SIGN -> minus  .
 
 STATBLOCK -> lcurbr REPTSTATBLOCK1 rcurbr  . 
 STATBLOCK -> STATEMENT  . 
@@ -144,8 +144,11 @@ STATEMENT -> read lpar VARIABLE rpar semi  .
 STATEMENT -> write lpar EXPR rpar semi  . 
 STATEMENT -> return lpar EXPR rpar semi  .
 
-STATEMENT2 -> lpar APARAMS rpar  .
-STATEMENT2 -> REPTIDNEST1  .
+STATEMENT2 -> lpar APARAMS rpar STATEMENT3  .
+STATEMENT2 -> REPTIDNEST1 STATEMENT3  .
+
+STATEMENT3 -> dot  .
+STATEMENT3 -> .
 
 ASSIGNSTATFUNCTIONCALL -> IDNEST ASSIGNSTATFUNCTIONCALL  .
 ASSIGNSTATFUNCTIONCALL -> ASSIGNOP EXPR  .
