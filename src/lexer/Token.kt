@@ -16,4 +16,12 @@ class Token(val type: TokenType, val line: Int, val lexeme: String = type.repr) 
             else -> ""
         }
     }
+
+    fun name(): String {
+        return type.name.lowercase()
+    }
+
+    fun isComment(): Boolean {
+        return type in listOf(TokenType.INLINECMT, TokenType.BLOCKCMT)
+    }
 }

@@ -2,19 +2,19 @@ package lexer
 
 enum class TokenType (val repr: String) {
     // Single character
-    SEMI(";"), COMMA(","), DOT("."), OPENPAR("("), CLOSEPAR(")"), OPENCUBR("{"), CLOSECUBR("}"), OPENSQBR("["), CLOSESQBR("]"), OR("|"), AND("&"), NOT("!"), MULT("*"), PLUS("+"),
+    SEMI("semi"), COMMA("comma"), DOT("dot"), OPENPAR("lpar"), CLOSEPAR("rpar"), OPENCUBR("lcurbr"), CLOSECUBR("rcurbr"), OPENSQBR("lsqbr"), CLOSESQBR("rsqbr"), OR("or"), AND("and"), NOT("not"), MULT("mult"), PLUS("plus"),
 
     // Requires lookahead
-    LT("<"), GT(">"), MINUS("-"),  DIV("/"), ASSIGN("="), COLON(":"),
+    LT("lt"), GT("gt"), MINUS("minus"),  DIV("div"), ASSIGN("equal"), COLON("colon"),
 
     // Two characters
-    EQ("=="), NOTEQ("<>"), LEQ("<="), GEQ(">="), COLONCOLON("::"), ARROW("->"),
+    EQ("eq"), NOTEQ("neq"), LEQ("leq"), GEQ("geq"), COLONCOLON("::"), ARROW("arrow"),
 
     // Reserved words
     VAR("var"), INT("integer"), FLOAT("float"), IF("if"), THEN("then"), ELSE("else"), VOID("void"), PUBLIC("public"), PRIVATE("private"), FUNC("func"), STRUCT("struct"), WHILE("while"), READ("read"), WRITE("write"), RETURN("return"), SELF("self"), INHERITS("inherits"), LET("let"), IMPL("impl"),
 
     // Types
-    ID("id"), FLOATNUM("floatnum"), INTNUM("intnum"), INLINECMT("inlinecmt"), BLOCKCMT("blockcmt"),
+    ID("id"), FLOATNUM("floatlit"), INTNUM("intlit"), INLINECMT("inlinecmt"), BLOCKCMT("blockcmt"),
 
     // Error types
     INVALIDCHAR("invalidchar"), INVALIDNUM("invalidnum"), INVALIDID("invalidid"),
