@@ -9,14 +9,27 @@ fun main() {
 
 
     val reader = BufferedReader(File("src/parser/input/bubblesort.src").reader())
+    //val reader = BufferedReader(File("src/parser/input/polynomial.src").reader())
+
+    val first = readFirstFollow(File("src/parser/grammar/ll1first.csv"))
+    val follow = readFirstFollow(File("src/parser/grammar/ll1follow.csv"))
+
+
     val lex = Lexer(reader)
 
-    val parser = Parser(lex, mapping.headers, mapping.map)
+    val parser = Parser(lexer = lex,
+        terminals = mapping.headers,
+        transitionTable = mapping.map,
+        firstSet = first,
+        followSet = follow)
+
     if(parser.parse())
         println("The file is valid.")
     else
         println("The file is not valid.")
 
+
+    val i = 0
 }
 
 fun readTable(file: File) : HeaderMapping {
@@ -36,13 +49,13 @@ fun readTable(file: File) : HeaderMapping {
 
 data class HeaderMapping(val headers: List<String>, val map: Map<String, Map<String, String>>)
 
-/*
-fun readCSV(file: File): Map<String, List<String>> {
-    //val reader = BufferedReader(file.reader())
-    val map = mutableMapOf<String, MutableMap<String, String>>()
-    file.bufferedReader().forEachLine {
+
+fun readFirstFollow(file: File): Map<String, List<String>> {
+    val reader = BufferedReader(file.reader())
+    val map = mutableMapOf<String, List<String>>()
+    reader.forEachLine {
         val line = it.split(",")
         map[line[0]] = line.slice(1..<line.size)
     }
     return map
-}*/
+}
