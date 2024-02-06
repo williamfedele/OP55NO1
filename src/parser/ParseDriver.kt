@@ -5,11 +5,11 @@ import java.io.BufferedReader
 import java.io.File
 
 fun main() {
-    val mapping = readTable(File("src/parser/grammar/ll1.csv"))
+    val mapping = readTable(File("src/parser/grammar/ll1test.csv"))
 
 
-    val reader = BufferedReader(File("src/parser/input/bubblesort.src").reader())
-    //val reader = BufferedReader(File("src/parser/input/polynomial.src").reader())
+    //val reader = BufferedReader(File("src/parser/input/bubblesort.src").reader())
+    val reader = BufferedReader(File("src/parser/input/polynomial.src").reader())
 
     val first = readFirstFollow(File("src/parser/grammar/ll1first.csv"))
     val follow = readFirstFollow(File("src/parser/grammar/ll1follow.csv"))

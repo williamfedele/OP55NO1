@@ -31,7 +31,7 @@ class Parser(private val lexer: Lexer,
             val x = s.top()
 
             // debug purposes
-            if (a.line == 60) {
+            if (a.line == 8) {
                 val i = 0
             }
 
