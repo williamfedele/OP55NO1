@@ -31,7 +31,7 @@ class Parser(private val lexer: Lexer,
             val x = s.top()
 
             // debug purposes
-            if (a.line == 8) {
+            if (a.line == 60) {
                 val i = 0
             }
 
@@ -71,15 +71,17 @@ class Parser(private val lexer: Lexer,
         return !(s.top()!= FINAL_SYMBOL || error)
     }
 
-    fun skipErrors() {
-        if (a.type.repr == FINAL_SYMBOL || followSet[s.top()]?.contains(a.type.repr) == true )
-            s.pop()
-        else {
-            while (firstSet[s.top()]?.contains(a.type.repr) != true ||
-                (firstSet[s.top()]?.contains(EPSILON) == true && followSet[s.top()]?.contains(a.type.repr) != true )) {
+    private fun skipErrors() {
 
-                a = lexer.nextToken()
+        while (firstSet[s.top()]?.contains(a.type.repr) != true ||
+              (firstSet[s.top()]?.contains(EPSILON) == true && followSet[s.top()]?.contains(a.type.repr) != true )) {
+
+            a = lexer.nextToken()
+            if (a.type.repr == FINAL_SYMBOL || followSet[s.top()]?.contains(a.type.repr) == true ) {
+                s.pop()
+                return
             }
+
         }
     }
 
