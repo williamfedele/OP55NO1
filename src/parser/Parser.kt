@@ -11,14 +11,15 @@ fun <T> Stack<T>.pop() = removeLastOrNull()
 fun <T> Stack<T>.top() = last()
 fun <T> Stack<T>.inverseRHSManyPush(e: List<T>) = addAll(e.reversed())
 
+const val EPSILON = "&epsilon"
+const val FINAL_SYMBOL = "$"
+
 class Parser(private val lexer: Lexer,
              private val terminals: List<String>,
              private val transitionTable: Map<String, Map<String, String>>,
              private val firstSet: Map<String, List<String>>,
              private val followSet: Map<String, List<String>>) {
 
-    private val EPSILON = "&epsilon"
-    private val FINAL_SYMBOL = "$"
     private lateinit var a: Token
     private val s = Stack<String>()
     private var error = false

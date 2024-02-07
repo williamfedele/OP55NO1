@@ -4,35 +4,41 @@ import lexer.Lexer
 import java.io.BufferedReader
 import java.io.File
 
+const val GRAMMAR_DIR = "src/parser/grammar/"
+const val INPUT_DIR = "src/parser/input/"
+
 fun main() {
-    val mapping = readTable(File("src/parser/grammar/ll1.csv"))
+    val mapping = readTable(File("${GRAMMAR_DIR}ll1.csv"))
 
+    val files = listOf(
+        File("${INPUT_DIR}bubblesort.src"),
+        File("${INPUT_DIR}polynomial.src")
+    )
 
-    //val file = File("src/parser/input/bubblesort.src")
-    val file = File("src/parser/input/polynomial.src")
+    val first = readFirstFollow(File("${GRAMMAR_DIR}ll1first.csv"))
+    val follow = readFirstFollow(File("${GRAMMAR_DIR}ll1follow.csv"))
 
-    val first = readFirstFollow(File("src/parser/grammar/ll1first.csv"))
-    val follow = readFirstFollow(File("src/parser/grammar/ll1follow.csv"))
+    val lex = Lexer(files[1])
 
-    val lex = Lexer(file)
-
+    // TODO: the parser will always need a lexer. should the parser handle its creation or the driver?
+    // if the parser internally creates a lexer, would just need to pass the file.
+    // could also update the file and have the parser update the lexer internally without creating a new object
     val parser = Parser(lexer = lex,
         terminals = mapping.headers,
         transitionTable = mapping.map,
         firstSet = first,
-        followSet = follow)
+        followSet = follow
+    )
 
     if(parser.parse())
         println("The file is valid.")
     else
         println("Errors were detected.")
 
-
-    val i = 0
 }
 
 /**
- * Read a CSV of an LL(1) table in 2D.
+ * Read a CSV of an 2D LL(1) table.
  * First column corresponds to non-terminals.
  * First row corresponds to terminals.
  * The table is filled with transitions using the terminal from non-terminal state.
