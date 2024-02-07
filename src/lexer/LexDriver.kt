@@ -1,6 +1,5 @@
 package lexer
 
-import java.io.BufferedReader
 import java.io.File
 
 fun main () {
@@ -10,10 +9,9 @@ fun main () {
     val fileEnding = ".src"
 
     for (file :String in files) {
-        val reader = BufferedReader(File(inputPath+file+fileEnding).reader())
 
         // extract all tokens from the current file
-        val lex = Lexer(reader)
+        val lex = Lexer(File(inputPath+file+fileEnding))
         val tokens = ArrayList<Token>()
         var token = lex.nextToken()
         while(token.type != TokenType.EOF) {

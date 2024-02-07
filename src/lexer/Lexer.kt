@@ -1,9 +1,11 @@
 package lexer
 
-import java.io.Reader
+import java.io.BufferedReader
+import java.io.File
 
-class Lexer(private val r: Reader) {
+class Lexer(f: File) {
     private var line = 1
+    private val r = BufferedReader(f.reader())
 
     fun nextToken(): Token {
         while (true) {

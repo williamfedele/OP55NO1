@@ -21,8 +21,9 @@ class Parser(private val lexer: Lexer,
     private val FINAL_SYMBOL = "$"
     private lateinit var a: Token
     private val s = Stack<String>()
+    private var error = false
+
     fun parse(): Boolean {
-        var error = false
         s.push(FINAL_SYMBOL)
         s.push("START")
         a = lexer.nextToken()
@@ -35,36 +36,34 @@ class Parser(private val lexer: Lexer,
                 val i = 0
             }
 
+            // skip all comments
             while (a.isComment())
                 a = lexer.nextToken()
 
-            // terminals
+            // top symbol is a terminal
             if (terminals.contains(x)) {
+                // next token should match the expected terminal on the stack
                 if (x == a.type.repr) {
                     s.pop()
                     a = lexer.nextToken()
                 }
                 else {
-                    error = true
-                    println("Syntax error at line $a.line.")
+                    // unexpected terminal
                     skipErrors()
                 }
             }
             else {
                 // non-terminal, check if the token is valid from the current state
                 if (transitionTable.containsKey(x) && transitionTable[x]!!.containsKey(a.type.repr)) {
-                    // valid, pop stack and add inverse of RHS to stack
+                    // valid, pop stack and add inverse of RHS to stack (ignore epsilons)
                     s.pop()
-                    // get RHS of the transition (not epsilons)
                     val rhs = transitionTable[x]!![a.type.repr]!!.split(" ").filter {it != EPSILON}
                     // push RHS to the stack in reverse order
                     s.inverseRHSManyPush(rhs)
                 }
                 else {
-                    error = true
-                    println("Syntax error at line $a.line.")
+                    // unexpected terminal
                     skipErrors()
-
                 }
             }
         }
@@ -72,9 +71,12 @@ class Parser(private val lexer: Lexer,
     }
 
     private fun skipErrors() {
+        error = true
+        println(a.getErrorMessage())
 
-        while (firstSet[s.top()]?.contains(a.type.repr) != true ||
-              (firstSet[s.top()]?.contains(EPSILON) == true && followSet[s.top()]?.contains(a.type.repr) != true )) {
+        // keep looking for tokens until one is in the first or follow set of the top of stack
+        // we can then pop it and move on after the error
+        while (firstSet[s.top()]?.contains(a.type.repr) != true ) {
 
             a = lexer.nextToken()
             if (a.type.repr == FINAL_SYMBOL || followSet[s.top()]?.contains(a.type.repr) == true ) {

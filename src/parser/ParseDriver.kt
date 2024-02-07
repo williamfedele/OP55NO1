@@ -5,17 +5,16 @@ import java.io.BufferedReader
 import java.io.File
 
 fun main() {
-    val mapping = readTable(File("src/parser/grammar/ll1test.csv"))
+    val mapping = readTable(File("src/parser/grammar/ll1.csv"))
 
 
-    //val reader = BufferedReader(File("src/parser/input/bubblesort.src").reader())
-    val reader = BufferedReader(File("src/parser/input/polynomial.src").reader())
+    //val file = File("src/parser/input/bubblesort.src")
+    val file = File("src/parser/input/polynomial.src")
 
     val first = readFirstFollow(File("src/parser/grammar/ll1first.csv"))
     val follow = readFirstFollow(File("src/parser/grammar/ll1follow.csv"))
 
-
-    val lex = Lexer(reader)
+    val lex = Lexer(file)
 
     val parser = Parser(lexer = lex,
         terminals = mapping.headers,
@@ -26,12 +25,18 @@ fun main() {
     if(parser.parse())
         println("The file is valid.")
     else
-        println("The file is not valid.")
+        println("Errors were detected.")
 
 
     val i = 0
 }
 
+/**
+ * Read a CSV of an LL(1) table in 2D.
+ * First column corresponds to non-terminals.
+ * First row corresponds to terminals.
+ * The table is filled with transitions using the terminal from non-terminal state.
+ */
 fun readTable(file: File) : HeaderMapping {
     val reader = BufferedReader(file.reader())
     val headers = reader.readLine().split(",")
@@ -49,7 +54,11 @@ fun readTable(file: File) : HeaderMapping {
 
 data class HeaderMapping(val headers: List<String>, val map: Map<String, Map<String, String>>)
 
-
+/**
+ * Read in CSV for first and follow sets.
+ * First column corresponds to current terminal/non-terminal.
+ * Rest of columns in each line correspond to the set (first or follow).
+ */
 fun readFirstFollow(file: File): Map<String, List<String>> {
     val reader = BufferedReader(file.reader())
     val map = mutableMapOf<String, List<String>>()
