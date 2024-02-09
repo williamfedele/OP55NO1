@@ -1,0 +1,8 @@
+// main function
+func main() -> void
+{
+  a().b().c = 3;
+  a().b().c; // this is an error
+  a().b().c();
+  a().b().c() = 2; // this is an error
+}

@@ -4,18 +4,23 @@ import java.io.File
 
 const val GRAMMAR_DIR = "src/parser/grammar/"
 const val INPUT_DIR = "src/parser/input/"
+const val OUTPUT_DIR = "src/parser/output/"
 
 fun main() {
 
     val files = listOf(
-        File("${INPUT_DIR}bubblesort.src"),
-        File("${INPUT_DIR}polynomial.src")
+        File("bubblesort.src"),
+        File("polynomial.src"),
+        File("test.src")
     )
+    val file = files[2]
 
     val parser = Parser (
-        srcFile = files[1],
+        srcFile = File("${INPUT_DIR}$file"),
         tableFileLL1 = File("${GRAMMAR_DIR}ll1.csv"),
-        firstFollowSetFile = File("${GRAMMAR_DIR}ll1ff.csv")
+        firstFollowSetFile = File("${GRAMMAR_DIR}ll1ff.csv"),
+        outputDerive = File("$OUTPUT_DIR$file.outderivation"),
+        outputSyntaxErrors = File("$OUTPUT_DIR$file.outsyntaxerrors")
     )
 
     if(parser.parse())
