@@ -8,7 +8,7 @@ enum class TokenType (val repr: String) {
     LT("lt"), GT("gt"), MINUS("minus"),  DIV("div"), ASSIGN("equal"), COLON("colon"),
 
     // Two characters
-    EQ("eq"), NOTEQ("neq"), LEQ("leq"), GEQ("geq"), COLONCOLON("::"), ARROW("arrow"),
+    EQ("eq"), NOTEQ("neq"), LEQ("leq"), GEQ("geq"), ARROW("arrow"),
 
     // Reserved words
     VAR("var"), INT("integer"), FLOAT("float"), IF("if"), THEN("then"), ELSE("else"), VOID("void"), PUBLIC("public"), PRIVATE("private"), FUNC("func"), STRUCT("struct"), WHILE("while"), READ("read"), WRITE("write"), RETURN("return"), SELF("self"), INHERITS("inherits"), LET("let"), IMPL("impl"),

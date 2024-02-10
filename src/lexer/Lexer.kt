@@ -35,15 +35,7 @@ class Lexer(f: File) {
                 ',' -> return Token(TokenType.COMMA, line)
                 '.' -> return Token(TokenType.DOT, line)
                 ';' -> return Token(TokenType.SEMI, line)
-                ':' -> {
-                    when (peek()) {
-                        ':' -> {
-                            poll()
-                            return Token(TokenType.COLONCOLON, line)
-                        }
-                        else ->  return Token(TokenType.COLON, line)
-                    }
-                }
+                ':' -> return Token(TokenType.COLON, line)
                 '-' -> {
                     when (peek()) {
                         '>' -> {
