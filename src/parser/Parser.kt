@@ -50,7 +50,7 @@ class Parser(srcFile: File,
             val x = s.top()
 
             // debug purposes
-            if (a.line == 34) {
+            if (a.line == 11) {
                 val i = 0
             }
 
@@ -95,6 +95,16 @@ class Parser(srcFile: File,
         writeError("Error with token '${a.lexeme}' on line ${a.line}.")
 
         writeDerive("ERROR")
+
+        while (terminals.contains(s.top())) {
+            if (s.top() == a.type.repr) {
+                s.pop()
+                return
+            }
+            else
+                s.pop()
+        }
+
         if (a.type.repr == FINAL_SYMBOL || firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true) {
             s.pop()
             return
