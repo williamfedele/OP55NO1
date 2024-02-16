@@ -41,6 +41,8 @@ class Parser(srcFile: File,
     private val deriveFile = openDerive(outputDerive)
     private val errorFile = openError(outputSyntaxErrors)
 
+    private val derivation = Stack<String>()
+
     fun parse(): Boolean {
         s.push(FINAL_SYMBOL)
         s.push("START")
@@ -63,7 +65,7 @@ class Parser(srcFile: File,
                 // token should match the expected terminal on the stack
                 if (x == a.type.repr) {
                     writeDerive("TERMINAL")
-                    s.pop()
+                    derivation.push(s.pop()!!)
                     a = lexer.nextToken()
                 }
                 else {
@@ -92,7 +94,8 @@ class Parser(srcFile: File,
 
     private fun skipErrors() {
         error = true
-        writeError("Error with token '${a.lexeme}' on line ${a.line}.")
+        // print first or follow depending if first is null or not
+        writeError("Error with token '${a.lexeme}' on line ${a.line}. Expected a ${firstFollowSet[s.top()]?.get("first")}")
 
         writeDerive("ERROR")
 
@@ -191,7 +194,7 @@ class Parser(srcFile: File,
 
 
     private fun writeDerive(production: String) {
-        FileWriter(deriveFile,true).use { out -> out.write("${s.toString().replace(", "," ")},${a},$production\n") }
+        FileWriter(deriveFile,true).use { out -> out.write("${derivation.toString().replace(", "," ")}${s.reversed().toString().replace(", "," ")},${a},$production\n") }
     }
 
 }
