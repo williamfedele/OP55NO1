@@ -11,7 +11,7 @@ fun main() {
     val files = listOf(
         File("bubblesort.src"),
         File("polynomial.src"),
-        File("test.src")
+        File("misc.src")
     )
     val file = files[2]
 

@@ -1,0 +1,35 @@
+// main function
+func main() -> void
+{
+  a().b().c = 3;
+  a().b().c; // this is an error, variable should be assigned something
+  a().b().c();
+  a().b().c() = 2; // this is an error, cannot assign to a function
+  a = 2;
+}
+
+func id() -> void
+{
+  id = id + 1;
+}
+
+impl implname {
+    func funcname(param: integer) -> void {}
+}
+
+impl id {}; // this is an error, impl does not end with semicolon
+struct id {};
+func id () -> id {}; // this is an error, func does not end with semicolon
+struct id inherits id {};
+func id () -> void {}
+impl id {} impl id {}
+func id () -> float {}
+func id () -> integer {}
+struct id inherits id , id {};
+struct id inherits id , id , id {};
+impl id {} struct id inherits id {};
+struct id inherits id {}; impl id {}
+struct id inherits id , id , id , id {};
+impl id {} struct id inherits id , id {};
+struct id inherits id , id , id , id , id {};
+struct id inherits id , id , id , id , id , id {};
