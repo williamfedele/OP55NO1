@@ -2,8 +2,8 @@
 func notmain() -> void
 {
 
-
   // functions: calls
+
   a = myfunc(2*2) + 4;
   myfunc(arr[2]);
   myfunc(arr[2][2]);
@@ -27,7 +27,7 @@ func notmain() -> void
 
   // function body: statements
 
-  while (a == 2.01) {};
+  while (a == 2.01) {}; // empty body
   while (a == 2.01) {
     write(a);
   };
@@ -41,6 +41,7 @@ func notmain() -> void
   read(file);
 
   // variable + idnest
+
   a(a).a = 1;
   a(a).b();
   a.b[a] = 1;
@@ -56,6 +57,19 @@ func notmain() -> void
   // expressions
 
   a = not ((-2*(2+3)) >= -10);
+  a = %^#; // repeated bad symbols
+
+  read(2); // error, cannot read from non-id
+  read(a[2]); // syntactically valid
+
+  myfunc(a 2.0 7e10); // error, commas must be used between parameters
+
+  while (a>2);
+  a = 10:
+  a = 10,; // error, comma not needed
+
+
+
 }
 
 func id() -> void
@@ -73,13 +87,13 @@ impl id {}; // this is an error, impl does not end with semicolon
 impl id {}
 func id () -> id {}; // this is an error, func does not end with semicolon
 func id (a: integer) -> id {a = a*2;}
-func id () -> void {} // no local variable declarations
+func id () -> void {} // no local variable declarations example
 func id () -> float {}
 func id () -> integer {}
 struct id inherits id {};
 struct id inherits id , id {};
 struct id inherits id , id , id {};
-struct id inherits id , id , id , id {};
+struct id inherits id , id , id , id {}; // multiple inheritance
 
 
 /* The following are test cases not covered in the polynomial/bubblesort files provided.

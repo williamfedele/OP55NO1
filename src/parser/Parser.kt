@@ -97,35 +97,27 @@ class Parser(srcFile: File,
         // print first or follow depending if first is null or not
         writeError("Error with token '${a.lexeme}' on line ${a.line}. Expected one of the following tokens: ${getPossibleNextTokens()}.")
 
-        writeDerive("ERROR")
-
-        while (terminals.contains(s.top())) {
-            if (s.top() == a.type.repr) {
-                s.pop()
-                return
-            }
-            else
-                s.pop()
+        if(a.line == 68){
+            val i = 0
         }
+
+        writeDerive("ERROR")
 
         if (a.type.repr == FINAL_SYMBOL || firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true) {
             s.pop()
-            return
         }
+        else {
+            // keep looking for tokens until one is in the first or follow set of the top of stack
+            // we can then pop it and move on after the error
+            while (firstFollowSet[s.top()]?.get("first")?.contains(a.type.repr) != true &&
+                !((firstFollowSet[s.top()]?.get("first")?.contains(EPSILON) == true && firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true))) {
 
-        // keep looking for tokens until one is in the first or follow set of the top of stack
-        // we can then pop it and move on after the error
-        while (firstFollowSet[s.top()]?.get("first")?.contains(a.type.repr) != true &&
-            !(firstFollowSet[s.top()]?.get("first")?.contains(EPSILON) == true && firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true)) {
 
-            a = lexer.nextToken()
-
-            if (a.type.repr == FINAL_SYMBOL || firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true) {
-                s.pop()
-                return
+                a = lexer.nextToken()
             }
-
         }
+
+
     }
 
     /**
@@ -139,8 +131,12 @@ class Parser(srcFile: File,
         if (first == null && follow == null){
             return listOf(s.top())
         }
-
-        return first ?: follow
+        else if (first?.contains(EPSILON) == true) {
+            return first.filter { it != "&epsilon" } + follow.orEmpty()
+        }
+        else {
+            return first
+        }
 
     }
 

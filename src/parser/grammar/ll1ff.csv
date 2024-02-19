@@ -1,67 +1,112 @@
-START,struct impl func,
+plus,plus,
+minus,minus,
+or,or,
+comma,comma,
+lsqbr,lsqbr,
+intlit,intlit,
+rsqbr,rsqbr,
+equal,equal,
+id,id,
+floatlit,floatlit,
+lpar,lpar,
+rpar,rpar,
+not,not,
+colon,colon,
+lcurbr,lcurbr,
+rcurbr,rcurbr,
+semi,semi,
+func,func,
+arrow,arrow,
+dot,dot,
+impl,impl,
+mult,mult,
+div,div,
+and,and,
+inherits,inherits,
+eq,eq,
+neq,neq,
+lt,lt,
+gt,gt,
+leq,leq,
+geq,geq,
+void,void,
+if,if,
+then,then,
+else,else,
+while,while,
+read,read,
+write,write,
+return,return,
+struct,struct,
+integer,integer,
+float,float,
+let,let,
+public,public,
+private,private,
+START,&epsilon struct impl func,$
 ARRAYSIZE2,intlit rsqbr,semi lsqbr rpar comma
 ASSIGNSTAT,id,
-EXPR2,eq neq lt gt leq geq,semi comma rpar
-FACTOR2,lpar lsqbr,semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar
-FUNCBODY,lcurbr,struct impl func rcurbr
+EXPR2,&epsilon eq neq lt gt leq geq,semi comma rpar
+FACTOR2,&epsilon lpar lsqbr,semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar
+FUNCBODY,lcurbr,struct impl func rcurbr $
 FUNCHEAD,func,semi lcurbr
-FPARAMS,id,rpar
-FUNCTIONCALL,id dot,
-IDNEST2,lpar lsqbr,semi mult div and dot id rsqbr eq neq lt gt leq geq plus minus or comma rpar
+FPARAMS,&epsilon id,rpar
+FUNCTIONCALL,&epsilon id dot,
+IDNEST2,&epsilon lpar lsqbr,semi mult div and dot id rsqbr eq neq lt gt leq geq plus minus or comma rpar
 FUNCDECL,func,rcurbr public private
-PROG,struct impl func,
+PROG,&epsilon struct impl func,$
 ARITHEXPR,id intlit floatlit lpar not plus minus,semi rsqbr eq neq lt gt leq geq comma rpar
 RELOP,eq neq lt gt leq geq,id intlit floatlit lpar not plus minus
 APARAMSTAIL,comma,comma rpar
-REPTAPARAMS1,comma,rpar
-REPTFPARAMS3,lsqbr,rpar comma
+REPTAPARAMS1,&epsilon comma,rpar
+REPTFPARAMS3,&epsilon lsqbr,rpar comma
 FPARAMSTAIL,comma,comma rpar
-REPTFPARAMS4,comma,rpar
-REPTFPARAMSTAIL4,lsqbr,comma rpar
-REPTFUNCBODY1,let id if while read write return,rcurbr
-REPTFUNCTIONCALL0,dot,id
-REPTIMPLDEF3,func,rcurbr
+REPTFPARAMS4,&epsilon comma,rpar
+REPTFPARAMSTAIL4,&epsilon lsqbr,comma rpar
+REPTFUNCBODY1,&epsilon let id if while read write return,rcurbr
+REPTFUNCTIONCALL0,&epsilon dot,id
+REPTIMPLDEF3,&epsilon func,rcurbr
 REPTOPTSTRUCTDECL22,comma,lcurbr
-REPTPROG0,struct impl func,
+REPTPROG0,&epsilon struct impl func,$
 MEMBERDECL,let func,rcurbr public private
 ARRAYSIZE,lsqbr,semi lsqbr rpar comma
-REPTVARIABLE0,dot,
+REPTVARIABLE0,&epsilon dot,
 INDICE,lsqbr,semi mult div and lsqbr id dot rsqbr eq neq lt gt leq geq equal plus minus or comma rpar
-REPTVARIABLE2,lsqbr,
+REPTVARIABLE2,&epsilon lsqbr,
 IDNEST,dot,semi mult div and dot id rsqbr eq neq lt gt leq geq plus minus or comma rpar
-REPTVARIABLEORFUNCTIONCALL,dot,semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar
+REPTVARIABLEORFUNCTIONCALL,&epsilon dot,semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar
 RETURNTYPE,void integer float id,semi lcurbr
 ADDOP,plus minus or,id intlit floatlit lpar not plus minus
-RIGHTRECARITHEXPR,plus minus or,semi rsqbr eq neq lt gt leq geq comma rpar
+RIGHTRECARITHEXPR,&epsilon plus minus or,semi rsqbr eq neq lt gt leq geq comma rpar
 MULTOP,mult div and,id intlit floatlit lpar not plus minus
 SIGN,plus minus,id intlit floatlit lpar not plus minus
-REPTSTATBLOCK1,id if while read write return,rcurbr
+REPTSTATBLOCK1,&epsilon id if while read write return,rcurbr
 RELEXPR,id intlit floatlit lpar not plus minus,rpar
-STATBLOCK,lcurbr id if while read write return,else semi
-STATEMENT3,dot,semi
+STATBLOCK,&epsilon lcurbr id if while read write return,else semi
+STATEMENT3,&epsilon dot,semi
 STATEMENT4,dot equal,semi
 ASSIGNOP,equal,id intlit floatlit lpar not plus minus
 EXPR,id intlit floatlit lpar not plus minus,semi comma rpar
-STATEMENT2,lpar dot lsqbr equal,semi
-OPTSTRUCTDECL2,inherits,lcurbr
-REPTSTRUCTDECL4,public private,rcurbr
-STRUCTORIMPLORFUNC,struct impl func,struct impl func
-STRUCTDECL,struct,struct impl func
-IMPLDEF,impl,struct impl func
-FUNCDEF,func,struct impl func rcurbr
+STATEMENT2,&epsilon lpar dot lsqbr equal,semi
+OPTSTRUCTDECL2,&epsilon inherits,lcurbr
+REPTSTRUCTDECL4,&epsilon public private,rcurbr
+STRUCTORIMPLORFUNC,struct impl func,struct impl func $
+STRUCTDECL,struct,struct impl func $
+IMPLDEF,impl,struct impl func $
+FUNCDEF,func,struct impl func rcurbr $
 TERM,id intlit floatlit lpar not plus minus,semi rsqbr eq neq lt gt leq geq plus minus or comma rpar
 FACTOR,id intlit floatlit lpar not plus minus,semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar
-RIGHTRECTERM,mult div and,semi rsqbr eq neq lt gt leq geq plus minus or comma rpar
+RIGHTRECTERM,&epsilon mult div and,semi rsqbr eq neq lt gt leq geq plus minus or comma rpar
 TYPE,integer float id,rpar lcurbr comma lsqbr semi
-REPTVARDECL4,lsqbr,semi
+REPTVARDECL4,&epsilon lsqbr,semi
 VARDECLORSTAT,let id if while read write return,let id if while read write return rcurbr
 VARDECL,let,public private let id if while read write return rcurbr
 STATEMENT,id if while read write return,else semi let id if while read write return rcurbr
 VARIABLE,id,equal rpar
 VARIABLE2,lpar lsqbr dot,equal rpar
-REPTVARIABLE,dot,equal rpar
-VARIDNEST2,lpar lsqbr,dot equal rpar
-APARAMS,id intlit floatlit lpar not plus minus,rpar
+REPTVARIABLE,&epsilon dot,equal rpar
+VARIDNEST2,&epsilon lpar lsqbr,dot equal rpar
+APARAMS,&epsilon id intlit floatlit lpar not plus minus,rpar
 VARIDNEST,dot,dot equal rpar
-REPTIDNEST1,lsqbr,semi mult div and id dot rsqbr eq neq lt gt leq geq equal plus minus or comma rpar
+REPTIDNEST1,&epsilon lsqbr,semi mult div and id dot rsqbr eq neq lt gt leq geq equal plus minus or comma rpar
 VISIBILITY,public private,let func
