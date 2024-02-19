@@ -14,8 +14,8 @@ fun <T> Stack<T>.pop() = removeLastOrNull()
 fun <T> Stack<T>.top() = last()
 fun <T> Stack<T>.inverseRHSManyPush(e: List<T>) = addAll(e.reversed())
 
-const val EPSILON = "&epsilon"
-const val FINAL_SYMBOL = "$"
+const val EPSILON = "&epsilon" // string representation of epsilon found in transition table and first/follow sets
+const val FINAL_SYMBOL = "$" // bottom symbol of stack. matches with EOF token reported by lexer
 
 class Parser(srcFile: File,
              tableFileLL1: File,
@@ -92,15 +92,15 @@ class Parser(srcFile: File,
         return !(s.top()!= FINAL_SYMBOL || error)
     }
 
+    /**
+     * Skip erroneous tokens if detected.
+     * Scan for tokens until its in the first set of the top of stack non-terminal.
+     * Pop if the next token is in the follow set of the top of stack non-terminal.
+     */
     private fun skipErrors() {
         error = true
         // print first or follow depending if first is null or not
         writeError("Error with token '${a.lexeme}' on line ${a.line}. Expected one of the following tokens: ${getPossibleNextTokens()}.")
-
-        if(a.line == 68){
-            val i = 0
-        }
-
         writeDerive("ERROR")
 
         if (a.type.repr == FINAL_SYMBOL || firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true) {
@@ -112,8 +112,11 @@ class Parser(srcFile: File,
             while (firstFollowSet[s.top()]?.get("first")?.contains(a.type.repr) != true &&
                 !((firstFollowSet[s.top()]?.get("first")?.contains(EPSILON) == true && firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true))) {
 
-
                 a = lexer.nextToken()
+
+                if (a.type.repr == FINAL_SYMBOL || firstFollowSet[s.top()]?.get("follow")?.contains(a.type.repr) == true) {
+                    s.pop()
+                }
             }
         }
 
@@ -131,7 +134,7 @@ class Parser(srcFile: File,
         if (first == null && follow == null){
             return listOf(s.top())
         }
-        else if (first?.contains(EPSILON) == true) {
+        else if (first?.contains(EPSILON) == true) { // include follow set if first contains epsilon transition
             return first.filter { it != "&epsilon" } + follow.orEmpty()
         }
         else {

@@ -13,23 +13,20 @@ fun main() {
         File("polynomial.src"),
         File("misc.src")
     )
-    val file = files[2]
 
-    val parser = Parser (
-        srcFile = File("${INPUT_DIR}$file"),
-        tableFileLL1 = File("${GRAMMAR_DIR}ll1.csv"),
-        firstFollowSetFile = File("${GRAMMAR_DIR}ll1ff.csv"),
-        outputDerive = File("$OUTPUT_DIR$file.outderivation"),
-        outputSyntaxErrors = File("$OUTPUT_DIR$file.outsyntaxerrors")
-    )
+    for (file: File in files) {
+        val parser = Parser (
+            srcFile = File("${INPUT_DIR}$file"),
+            tableFileLL1 = File("${GRAMMAR_DIR}ll1.csv"),
+            firstFollowSetFile = File("${GRAMMAR_DIR}ll1ff.csv"),
+            outputDerive = File("$OUTPUT_DIR$file.outderivation"),
+            outputSyntaxErrors = File("$OUTPUT_DIR$file.outsyntaxerrors")
+        )
 
-    if(parser.parse())
-        println("The file is valid.")
-    else
-        println("Errors were detected.")
+        if(parser.parse())
+            println("The file is valid.")
+        else
+            println("Errors were detected.")
+    }
 
 }
-
-
-
-
