@@ -95,7 +95,7 @@ class Parser(srcFile: File,
     private fun skipErrors() {
         error = true
         // print first or follow depending if first is null or not
-        writeError("Error with token '${a.lexeme}' on line ${a.line}. Expected one of the following tokens: ${getPossibleTokens()}.")
+        writeError("Error with token '${a.lexeme}' on line ${a.line}. Expected one of the following tokens: ${getPossibleNextTokens()}.")
 
         writeDerive("ERROR")
 
@@ -132,7 +132,7 @@ class Parser(srcFile: File,
      * Returns a list containing all possible valid tokens from the current state.
      * For usage in error reporting.
      */
-    private fun getPossibleTokens(): List<String>? {
+    private fun getPossibleNextTokens(): List<String>? {
         val first = firstFollowSet[s.top()]?.get("first")
         val follow = firstFollowSet[s.top()]?.get("follow")
         // if first and follow are null, the top of the stack is terminal

@@ -55,7 +55,7 @@ func notmain() -> void
 
   // expressions
 
-  a = !((-2*(2+3)) >= -10); //fix
+  a = not ((-2*(2+3)) >= -10);
 }
 
 func id() -> void
