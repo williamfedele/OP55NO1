@@ -45,7 +45,6 @@ public,public,
 private,private,
 START,&epsilon struct impl func,$
 ARRAYSIZE2,intlit rsqbr,semi lsqbr rpar comma
-ASSIGNSTAT,id,
 EXPR2,&epsilon eq neq lt gt leq geq,semi comma rpar
 FACTOR2,&epsilon lpar lsqbr,semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar
 FUNCBODY,lcurbr,struct impl func rcurbr $
@@ -64,16 +63,13 @@ FPARAMSTAIL,comma,comma rpar
 REPTFPARAMS4,&epsilon comma,rpar
 REPTFPARAMSTAIL4,&epsilon lsqbr,comma rpar
 REPTFUNCBODY1,&epsilon let id if while read write return,rcurbr
-REPTFUNCTIONCALL0,&epsilon dot,id
 REPTIMPLDEF3,&epsilon func,rcurbr
 REPTOPTSTRUCTDECL22,comma,lcurbr
 REPTPROG0,&epsilon struct impl func,$
 MEMBERDECL,let func,rcurbr public private
 ARRAYSIZE,lsqbr,semi lsqbr rpar comma
-REPTVARIABLE0,&epsilon dot,
 INDICE,lsqbr,semi mult div and lsqbr id dot rsqbr eq neq lt gt leq geq equal plus minus or comma rpar
-REPTVARIABLE2,&epsilon lsqbr,
-IDNEST,dot,semi mult div and dot id rsqbr eq neq lt gt leq geq plus minus or comma rpar
+IDNEST,dot,semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar
 REPTVARIABLEORFUNCTIONCALL,&epsilon dot,semi mult div and rsqbr eq neq lt gt leq geq plus minus or comma rpar
 RETURNTYPE,void integer float id,semi lcurbr
 ADDOP,plus minus or,id intlit floatlit lpar not plus minus
@@ -102,11 +98,11 @@ REPTVARDECL4,&epsilon lsqbr,semi
 VARDECLORSTAT,let id if while read write return,let id if while read write return rcurbr
 VARDECL,let,public private let id if while read write return rcurbr
 STATEMENT,id if while read write return,else semi let id if while read write return rcurbr
-VARIABLE,id,equal rpar
-VARIABLE2,lpar lsqbr dot,equal rpar
-REPTVARIABLE,&epsilon dot,equal rpar
-VARIDNEST2,&epsilon lpar lsqbr,dot equal rpar
+VARIABLE,id,rpar
+VARIABLE2,lpar lsqbr dot,rpar
+REPTVARIABLE,&epsilon dot,rpar
+VARIDNEST2,&epsilon lpar lsqbr,dot rpar
 APARAMS,&epsilon id intlit floatlit lpar not plus minus,rpar
-VARIDNEST,dot,dot equal rpar
-REPTIDNEST1,&epsilon lsqbr,semi mult div and id dot rsqbr eq neq lt gt leq geq equal plus minus or comma rpar
+VARIDNEST,dot,dot rpar
+REPTIDNEST1,&epsilon lsqbr,equal semi mult div and dot rsqbr eq neq lt gt leq geq plus minus or comma rpar
 VISIBILITY,public private,let func
