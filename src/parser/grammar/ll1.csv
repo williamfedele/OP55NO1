@@ -9,14 +9,14 @@ ARRAYSIZE2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,rsqbr,,,,,,,intlit A2 rsqbr,,
 ASSIGNOP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,equal,
 EXPR,,,,,ARITHEXPR EXPR2,ARITHEXPR EXPR2,,,,,,,,,,,,,,,,,ARITHEXPR EXPR2,ARITHEXPR EXPR2,,,,,,,,,,,,,,,,,,ARITHEXPR EXPR2,ARITHEXPR EXPR2,ARITHEXPR EXPR2,,
 EXPR2,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,,,,&epsilon,RELOP ARITHEXPR,RELOP ARITHEXPR,RELOP ARITHEXPR,RELOP ARITHEXPR,RELOP ARITHEXPR,RELOP ARITHEXPR,,,,,,,,,,,,,,
-FACTOR,,,,,lpar ARITHEXPR rpar,id FACTOR2 REPTVARIABLEORFUNCTIONCALL,,,,,,,,,,,,,,,,,SIGN FACTOR,SIGN FACTOR,,,,,,,,,,,,,,,,,,not FACTOR,floatlit,intlit,,
+FACTOR,,,,,lpar ARITHEXPR rpar,id A1 FACTOR2 REPTVARIABLEORFUNCTIONCALL,,,,,,,,,,,,,,,,,SIGN FACTOR,SIGN FACTOR,,,,,,,,,,,,,,,,,,not FACTOR,floatlit,intlit,,
 FACTOR2,,,,REPTIDNEST1,lpar APARAMS rpar,,REPTIDNEST1,REPTIDNEST1,,,,,,,,,,,,,,,REPTIDNEST1,REPTIDNEST1,,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,,,,,,,,REPTIDNEST1
-FPARAMS,,,,&epsilon,,id colon TYPE REPTFPARAMS3 REPTFPARAMS4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-FPARAMSTAIL,,,,,,,,,,,,,,,,,,,,,,,,,,comma id colon TYPE REPTFPARAMSTAIL4,,,,,,,,,,,,,,,,,,,,
-FUNCBODY,,,,,,,,,,,,,,lcurbr REPTFUNCBODY1 rcurbr,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+FPARAMS,,,,&epsilon,,id A1 colon TYPE E REPTFPARAMS3 A3 REPTFPARAMS4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+FPARAMSTAIL,,,,,,,,,,,,,,,,,,,,,,,,,,comma id A1 colon TYPE E REPTFPARAMSTAIL4 A3,,,,,,,,,,,,,,,,,,,,
+FUNCBODY,,,,,,,,,,,,,,lcurbr E REPTFUNCBODY1 A11 rcurbr,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 FUNCDECL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,FUNCHEAD semi,,,,,
 FUNCDEF,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,FUNCHEAD FUNCBODY,,,,,
-FUNCHEAD,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,func id lpar FPARAMS rpar arrow RETURNTYPE,,,,,
+FUNCHEAD,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,func id A1 lpar E FPARAMS A8 rpar arrow RETURNTYPE A9,,,,,
 IDNEST,,,,,,,dot id IDNEST2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 IDNEST2,,,,REPTIDNEST1,lpar APARAMS rpar,,REPTIDNEST1,REPTIDNEST1,,,,,,,,,,,,,,,REPTIDNEST1,REPTIDNEST1,,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,REPTIDNEST1,,,,,,,,REPTIDNEST1
 IMPLDEF,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,impl id lcurbr REPTIMPLDEF3 rcurbr,,,,,,,
@@ -40,15 +40,15 @@ REPTSTATBLOCK1,,,,,,STATEMENT REPTSTATBLOCK1,,,,,,,&epsilon,,,STATEMENT REPTSTAT
 REPTSTRUCTDECL4,,VISIBILITY MEMBERDECL REPTSTRUCTDECL4,VISIBILITY MEMBERDECL REPTSTRUCTDECL4,,,,,,,,,,&epsilon,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 REPTVARDECL4,,,,,,,,&epsilon,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ARRAYSIZE REPTVARDECL4,,,,,,,,
 REPTVARIABLEORFUNCTIONCALL,,,,&epsilon,,,IDNEST REPTVARIABLEORFUNCTIONCALL,&epsilon,,,,,,,,,,,,,,,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,,,,,,,,,&epsilon
-RETURNTYPE,,,,,,TYPE,,,,,TYPE,TYPE,,,,,,,,,,,,,void,,,,,,,,,,,,,,,,,,,,,
-RIGHTRECARITHEXPR,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,ADDOP TERM RIGHTRECARITHEXPR,ADDOP TERM RIGHTRECARITHEXPR,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,,,,&epsilon,,,,,,,,,ADDOP TERM RIGHTRECARITHEXPR
-RIGHTRECTERM,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,MULTOP FACTOR RIGHTRECTERM,MULTOP FACTOR RIGHTRECTERM,MULTOP FACTOR RIGHTRECTERM,&epsilon,,,,,,,,,&epsilon
+RETURNTYPE,,,,,,TYPE,,,,,TYPE,TYPE,,,,,,,,,,,,,void T,,,,,,,,,,,,,,,,,,,,,
+RIGHTRECARITHEXPR,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,ADDOP TERM A12 RIGHTRECARITHEXPR,ADDOP TERM A12 RIGHTRECARITHEXPR,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,,,,&epsilon,,,,,,,,,ADDOP TERM A12 RIGHTRECARITHEXPR
+RIGHTRECTERM,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,MULTOP FACTOR A13 RIGHTRECTERM,MULTOP FACTOR A13 RIGHTRECTERM,MULTOP FACTOR A13 RIGHTRECTERM,&epsilon,,,,,,,,,&epsilon
 SIGN,,,,,,,,,,,,,,,,,,,,,,,minus,plus,,,,,,,,,,,,,,,,,,,,,,
 STATBLOCK,,,,,,STATEMENT,,&epsilon,,,,,,lcurbr REPTSTATBLOCK1 rcurbr,,STATEMENT,STATEMENT,STATEMENT,STATEMENT,&epsilon,,STATEMENT,,,,,,,,,,,,,,,,,,,,,,,,
-STATEMENT,,,,,,id STATEMENT2 semi,,,,,,,,,,return lpar EXPR rpar semi,write lpar EXPR rpar semi,read lpar VARIABLE rpar semi,while lpar RELEXPR rpar STATBLOCK semi,,,if lpar RELEXPR rpar then STATBLOCK else STATBLOCK semi,,,,,,,,,,,,,,,,,,,,,,,,
+STATEMENT,,,,,,id A1 STATEMENT2 semi,,,,,,,,,,return lpar EXPR rpar semi,write lpar EXPR rpar semi,read lpar VARIABLE rpar semi,while lpar RELEXPR rpar STATBLOCK semi,,,if lpar RELEXPR rpar then STATBLOCK else STATBLOCK semi,,,,,,,,,,,,,,,,,,,,,,,,
 STATEMENT2,,,,,lpar APARAMS rpar STATEMENT3,,REPTIDNEST1 STATEMENT4,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,REPTIDNEST1 STATEMENT4,,,,,,,REPTIDNEST1 STATEMENT4,
 STATEMENT3,,,,,,,dot id STATEMENT2,&epsilon,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-STATEMENT4,,,,,,,dot id STATEMENT2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ASSIGNOP EXPR,
+STATEMENT4,,,,,,,dot id STATEMENT2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ASSIGNOP EXPR A10,
 STRUCTDECL,,,,,,,,,,,,,,,struct E id A1 E OPTSTRUCTDECL2 A6 lcurbr REPTSTRUCTDECL4 A7 rcurbr semi,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 STRUCTORIMPLORFUNC,,,,,,,,,,,,,,,STRUCTDECL,,,,,,,,,,,,,,,,,,,,,,,,IMPLDEF,,FUNCDEF,,,,,
 TERM,,,,,FACTOR RIGHTRECTERM,FACTOR RIGHTRECTERM,,,,,,,,,,,,,,,,,FACTOR RIGHTRECTERM,FACTOR RIGHTRECTERM,,,,,,,,,,,,,,,,,,FACTOR RIGHTRECTERM,FACTOR RIGHTRECTERM,FACTOR RIGHTRECTERM,,
