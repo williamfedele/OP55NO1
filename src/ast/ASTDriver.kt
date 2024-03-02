@@ -11,10 +11,10 @@ fun main() {
 
     val files = listOf(
         File("bubblesort.src"),
-        //File("polynomial.src"),
-        //File("example1.src"),
-        //File("example2.src"),
-        //File("example3.src"),
+        File("polynomial.src"),
+        File("example1.src"),
+        File("example2.src"),
+        File("example3.src"),
     )
 
     for (file: File in files) {

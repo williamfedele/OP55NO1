@@ -223,8 +223,9 @@ class Lexer(f: File) {
 
                     // floats not in scientific notation cannot end in 0. ex: 1.20 should be 1.2
                     if (n.last() == '0' && !hasE && hasDecimal)
-                        valid = false
-
+                        if (n.takeLast(2) != ".0") {
+                            valid = false
+                        }
                     if (!valid)
                         return Token(TokenType.INVALIDNUM, line, n)
                     else if (hasDecimal || hasE)
