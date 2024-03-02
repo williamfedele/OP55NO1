@@ -5,12 +5,13 @@ import parser.Stack
 import parser.pop
 import parser.top
 import java.io.File
+import java.util.*
 
 
 class AST {
     companion object {
         fun makeNode(t: Token, s: String): Node{
-            return Node(s, null, t)
+            return Node(t.type.repr.uppercase(Locale.getDefault()), null, t)
         }
 
         fun makeFamilyUntilNull(sstack: Stack<Node?>, parent: String): Node {
@@ -36,12 +37,10 @@ class AST {
         fun astPrint(root: Node?, padding: String = "", outputFile: File) {
             if (root == null)
                 return
-            if (root.name == "Prog")
-                outputFile.writeText("$padding${root.name}\n")
-            else
-                outputFile.appendText("$padding${root.name}\n")
 
-            println("$padding${root.name}")
+            outputFile.appendText("$padding${root.name}\n")
+
+            //println("$padding${root.name}")
             for (child: Node in root.children.reversed()) {
                 astPrint(child, "$padding| ", outputFile)
             }

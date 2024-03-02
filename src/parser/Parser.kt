@@ -103,6 +103,7 @@ class Parser(srcFile: File,
             }
         }
         if (astFile != null) {
+            astFile.writeText("") // clear the file
             AST.astPrint(semanticStack.top(), "", astFile)
         }
         return !(s.top()!= FINAL_SYMBOL || error)

@@ -1,0 +1,23 @@
+func f(p1: int, p2: int, p3: int) -> int {
+    let retval1: int;
+    write(p1);
+    read(p2);
+    write(p3);
+    retval1=p1+p2*p3;
+    write(retval1);
+    return(retval2);
+}
+
+func main() -> void {
+    let a: int;
+    let b: int;
+    let c: int;
+    a=1;
+    write(a);
+    b=2;
+    write(b);
+    c=3;
+    write(c);
+    a=f(a,b,c)*b+c;
+    write(a+4);
+}
