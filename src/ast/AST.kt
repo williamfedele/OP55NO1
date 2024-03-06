@@ -26,9 +26,6 @@ class AST {
         fun makeFamily(sstack: Stack<Node?>, parent: String, n: Int): Node {
             val new = Node(parent)
             for (i in 1..n) {
-                if (sstack.top() == null) {
-                    sstack.pop()
-                }
                 new.addChild(sstack.pop()!!)
             }
             return new

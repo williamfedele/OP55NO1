@@ -60,7 +60,7 @@ class Parser(srcFile: File,
             val x = s.top()
 
             // debug purposes
-            if (currToken.line == 11) {
+            if (x == "A29") {
                 val i = 0
             }
 
@@ -187,7 +187,7 @@ class Parser(srcFile: File,
         val reader = BufferedReader(file.reader())
         val nonterminals = mutableListOf<String>()
         reader.forEachLine { it ->
-            nonterminals.addLast(it.split(",")[0])
+            nonterminals.add(it.split(",")[0])
         }
         return nonterminals
     }
