@@ -60,7 +60,7 @@ class Parser(srcFile: File,
             val x = s.top()
 
             // debug purposes
-            if (x == "A29") {
+            if (x == "A32") {
                 val i = 0
             }
 
@@ -98,6 +98,7 @@ class Parser(srcFile: File,
                 }
             }
             else {
+                //println("processing $x")
                 processSemantics(x)
                 s.pop()
             }
@@ -117,6 +118,7 @@ class Parser(srcFile: File,
             "makeNull" -> semanticStack.push(null)
             "makeFamilyUntilNull" -> semanticStack.push(AST.makeFamilyUntilNull(semanticStack, action.second))
             "makeFamily" -> semanticStack.push(AST.makeFamily(semanticStack, action.second, action.third))
+            "makeSign" -> semanticStack.push(AST.makeSign(semanticStack))
         }
     }
 

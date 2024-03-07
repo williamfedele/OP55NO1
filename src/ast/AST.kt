@@ -13,7 +13,8 @@ class AST {
         fun makeNode(t: Token, s: String): Node{
             return Node(t.type.repr.uppercase(Locale.getDefault()), null, t)
         }
-
+        // TODO: give children nodes connections to right sibling and first child.
+        // give parent connection to first child.
         fun makeFamilyUntilNull(sstack: Stack<Node?>, parent: String): Node {
             val new = Node(parent)
             while (sstack.top() != null) {
@@ -28,6 +29,14 @@ class AST {
             for (i in 1..n) {
                 new.addChild(sstack.pop()!!)
             }
+            return new
+        }
+
+        fun makeSign(sstack: Stack<Node?>): Node {
+            val factor = sstack.pop()!!
+            val sign = sstack.pop()!!
+            val new = Node(sign.t!!.type.repr.uppercase(Locale.getDefault()))
+            new.addChild(factor)
             return new
         }
 

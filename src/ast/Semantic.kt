@@ -1,5 +1,12 @@
 package ast
 
+/**
+ * Maps semantic actions to a triple.
+ * The triple contains:
+ *      an AST operation,
+ *      a label for the encapsulated expression,
+ *      a number of nodes to pop from the stack for the action (only used for makeFamily action)
+ */
 class Semantic {
     companion object {
         val actions: Map<String, Triple<String, String, Int>> = mapOf(
@@ -35,6 +42,8 @@ class Semantic {
             "A30" to Triple("makeFamily", "EXPR", 1),
             "A31" to Triple("makeFamilyUntilNull", "TERM", -1),
             "A32" to Triple("makeFamily", "ARITHEXPR", 1),
+            "A33" to Triple("makeFamily", "NOT", 1),
+            "A34" to Triple("makeSign", "", 2),
 
             "T" to Triple("makeNode", "TYPE", -1),
             "E" to Triple("makeNull", "", -1),
