@@ -48,6 +48,7 @@ class Semantic {
             "T" to Triple("makeNode", "TYPE", -1),
             "E" to Triple("makeNull", "", -1),
             "N" to Triple("makeNode", "NUM", -1),
+            "B" to Triple("makeEmpty", "EMPTY", -1),
 
         )
 

@@ -110,6 +110,7 @@ class Parser(srcFile: File,
         when (action!!.first) {
             "makeNode" -> semanticStack.push(AST.makeNode(prevToken, action.second))
             "makeNull" -> semanticStack.push(null)
+            "makeEmpty" -> semanticStack.push(Node("EMPTY", null,null))
             "makeFamilyUntilNull" -> semanticStack.push(AST.makeFamilyUntilNull(semanticStack, action.second))
             "makeFamily" -> semanticStack.push(AST.makeFamily(semanticStack, action.second, action.third))
             "makeSign" -> semanticStack.push(AST.makeSign(semanticStack))

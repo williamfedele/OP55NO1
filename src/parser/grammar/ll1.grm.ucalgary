@@ -14,7 +14,7 @@ ARITHEXPR -> TERM RIGHTRECARITHEXPR  .
 ARRAYSIZE -> lsqbr ARRAYSIZE2   .
 
 ARRAYSIZE2 -> intlit A2 rsqbr  .
-ARRAYSIZE2 -> rsqbr  .
+ARRAYSIZE2 -> B rsqbr  .
 
 ASSIGNOP -> equal  .
 
