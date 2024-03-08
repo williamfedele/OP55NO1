@@ -1,6 +1,13 @@
 func main() -> void {
-    x = fun(3).a[a][2];
-    fun(a).a[2][3].fun(3);
-    x= !a;
-    x=-a;
+
+    x = fun(3).a[a][2];         // complicated assignstat
+    fun1(a).a[2][3].fun2(3);    // complicated function call
+
+    x = !a;                     // not factor
+    x = -a;                     // signed factor
+    x = a > b;                  // relop assignstat statement
+
+    x = !fun(3) > -fun(4);      // mixing relop/sign/not
+    x = !fun(3) - -fun(4);      // mixing addop/sign/not
+    x = !fun(3) * -fun(4);      // mixing multop/sign/not
 }

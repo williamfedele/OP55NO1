@@ -59,11 +59,6 @@ class Parser(srcFile: File,
         while (s.top() != FINAL_SYMBOL) {
             val x = s.top()
 
-            // debug purposes
-            if (x == "A32") {
-                val i = 0
-            }
-
             // skip all comments
             while (currToken.isComment())
                 currToken = lexer.nextToken()
@@ -98,7 +93,6 @@ class Parser(srcFile: File,
                 }
             }
             else {
-                //println("processing $x")
                 processSemantics(x)
                 s.pop()
             }
