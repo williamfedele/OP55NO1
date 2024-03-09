@@ -11,7 +11,6 @@ class Semantic {
     companion object {
         val actions: Map<String, Triple<String, String, Int>> = mapOf(
             "A1" to Triple("makeNode", "", -1),
-            "A2" to Triple("makeNode", "DIM", -1),
             "A3" to Triple("makeFamilyUntilNull", "DIMLIST", -1),
             "A4" to Triple("makeFamily", "VARDECL", 3),
             "A5" to Triple("makeFamilyUntilNull", "PROG", -1),

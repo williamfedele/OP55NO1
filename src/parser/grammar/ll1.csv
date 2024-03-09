@@ -5,7 +5,7 @@ APARAMS,,,,&epsilon,EXPR REPTAPARAMS1,EXPR REPTAPARAMS1,,,,,,,,,,,,,,,,,EXPR REP
 APARAMSTAIL,,,,,,,,,,,,,,,,,,,,,,,,,,comma EXPR,,,,,,,,,,,,,,,,,,,,
 ARITHEXPR,,,,,TERM RIGHTRECARITHEXPR,TERM RIGHTRECARITHEXPR,,,,,,,,,,,,,,,,,TERM RIGHTRECARITHEXPR,TERM RIGHTRECARITHEXPR,,,,,,,,,,,,,,,,,,TERM RIGHTRECARITHEXPR,TERM RIGHTRECARITHEXPR,TERM RIGHTRECARITHEXPR,,
 ARRAYSIZE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,lsqbr ARRAYSIZE2,,,,,,,,
-ARRAYSIZE2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,B rsqbr,,,,,,,intlit A2 rsqbr,,
+ARRAYSIZE2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,B rsqbr,,,,,,,intlit A1 rsqbr,,
 ASSIGNOP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,equal,
 EXPR,,,,,ARITHEXPR EXPR2,ARITHEXPR EXPR2,,,,,,,,,,,,,,,,,ARITHEXPR EXPR2,ARITHEXPR EXPR2,,,,,,,,,,,,,,,,,,ARITHEXPR EXPR2,ARITHEXPR EXPR2,ARITHEXPR EXPR2,,
 EXPR2,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,,,,&epsilon,RELOP ARITHEXPR A31,RELOP ARITHEXPR A31,RELOP ARITHEXPR A31,RELOP ARITHEXPR A31,RELOP ARITHEXPR A31,RELOP ARITHEXPR A31,,,,,,,,,,,,,,
