@@ -1,7 +1,6 @@
 package parser
 
 import ast.AST
-import ast.Node
 import ast.Semantic
 import lexer.Lexer
 import lexer.Token
@@ -42,7 +41,7 @@ class Parser(srcFile: File,
     private lateinit var currToken: Token
     private lateinit var prevToken: Token
     private val s = Stack<String>()
-    private val semanticStack = Stack<Node?>()
+    private val ast = AST()
     private var error = false
 
     private val deriveFile = openDerive(outputDerive)
@@ -99,7 +98,7 @@ class Parser(srcFile: File,
         }
         if (astFile != null) {
             astFile.writeText("") // clear the file
-            AST.astPrint(semanticStack.top(), "", astFile)
+            ast.astPrint(astFile)
         }
         return !(s.top()!= FINAL_SYMBOL || error)
     }
@@ -108,12 +107,12 @@ class Parser(srcFile: File,
         val action = Semantic.actions[x]
 
         when (action!!.first) {
-            "makeNode" -> semanticStack.push(AST.makeNode(prevToken, action.second))
-            "makeNull" -> semanticStack.push(null)
-            "makeEmpty" -> semanticStack.push(Node("EMPTY", null,null))
-            "makeFamilyUntilNull" -> semanticStack.push(AST.makeFamilyUntilNull(semanticStack, action.second))
-            "makeFamily" -> semanticStack.push(AST.makeFamily(semanticStack, action.second, action.third))
-            "makeSign" -> semanticStack.push(AST.makeSign(semanticStack))
+            "makeNode" -> ast.makeNode(prevToken)
+            "makeNull" -> ast.makeNull()
+            "makeEmpty" -> ast.makeEmpty()
+            "makeFamilyUntilNull" -> ast.makeFamilyUntilNull(action.second)
+            "makeFamily" -> ast.makeFamily(action.second, action.third)
+            "makeSign" -> ast.makeSign()
         }
     }
 

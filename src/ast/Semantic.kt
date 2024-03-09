@@ -45,9 +45,7 @@ class Semantic {
             "A33" to Triple("makeFamily", "NOT", 1),
             "A34" to Triple("makeSign", "", 2),
 
-            "T" to Triple("makeNode", "TYPE", -1),
             "E" to Triple("makeNull", "", -1),
-            "N" to Triple("makeNode", "NUM", -1),
             "B" to Triple("makeEmpty", "EMPTY", -1),
 
         )
