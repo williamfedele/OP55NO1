@@ -37,13 +37,11 @@ class Semantic {
             "A26" to Triple("makeFamilyUntilNull", "STATBLOCK", -1),
             "A27" to Triple("makeFamily", "IF", 3),
             "A28" to Triple("makeFamily", "WHILE", 2),
-            "A29" to Triple("makeFamily", "TERM", 1),
-            "A30" to Triple("makeFamily", "EXPR", 1),
             "A31" to Triple("makeFamily", "RELOP", 2),
             "A32" to Triple("makeFamily", "ARITHEXPR", 1),
             "A33" to Triple("makeFamily", "NOT", 1),
-            "A34" to Triple("makeSign", "", 2),
 
+            "S" to Triple("makeSign", "", 2),
             "E" to Triple("makeNull", "", -1),
             "B" to Triple("makeEmpty", "EMPTY", -1),
 
