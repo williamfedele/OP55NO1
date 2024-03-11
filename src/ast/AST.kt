@@ -21,6 +21,7 @@ class AST {
         semanticStack.push(Node(t.type.repr.uppercase(Locale.getDefault()), null, t))
     }
 
+    // Makes nodes (until null is found) from the top of the stack children of a new node created with the parent string
     fun makeFamilyUntilNull(parent: String) {
         val new = Node(parent)
         val inOrderStack = Stack<Node?>() // put nodes in order due to reversed nature of stack
@@ -53,10 +54,12 @@ class AST {
         semanticStack.push(new)
     }
 
+    // Push null for usage with makeFamilyUntilNull
     fun makeNull() {
         semanticStack.push(null)
     }
 
+    // To explicitly declare an empty dimlist for array function parameters.
     fun makeEmpty() {
         semanticStack.push(Node("EMPTY"))
     }
@@ -70,11 +73,10 @@ class AST {
         semanticStack.push(new)
     }
 
+    // Recursively prints the AST nodes using indentation to denote children
     fun astPrint(outputFile: File) {
         astPrintRecur(semanticStack.top(), "", outputFile)
     }
-
-    // Recursively prints the AST nodes using indentation to denote children
     private fun astPrintRecur(root: Node?, padding: String = "", outputFile: File) {
         if (root == null)
             return
