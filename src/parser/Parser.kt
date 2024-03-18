@@ -249,5 +249,8 @@ class Parser(srcFile: File,
         FileWriter(deriveFile,true).use { out -> out.write("${derivation.toString().replace(", "," ")}${s.reversed().toString().replace(", "," ")},${currToken},$production\n") }
     }
 
+    fun getAST(): AST {
+        return ast
+    }
 }
 

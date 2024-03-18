@@ -1,6 +1,9 @@
 package ast
 
 import lexer.Token
+import semantic.SymTab
+import semantic.SymTabEntry
+import semantic.Visitor
 
 data class Node(val s: String, var parent: Node? = null, var t: Token? = null) {
 
@@ -9,6 +12,9 @@ data class Node(val s: String, var parent: Node? = null, var t: Token? = null) {
     var leftmostChild: Node? = null
     var leftmostSibling: Node? = null
     var rightSibling: Node? = null
+
+    var symTab: SymTab? = null
+    var symTabEntry: SymTabEntry? = null
 
     // Adding a child node to a parent
     fun addChild(child: Node) {
@@ -26,4 +32,9 @@ data class Node(val s: String, var parent: Node? = null, var t: Token? = null) {
         children.add(child)
         child.parent = this
     }
+
+    fun accept(visitor: Visitor) {
+        visitor.visit(this)
+    }
+
 }

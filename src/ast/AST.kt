@@ -88,6 +88,10 @@ class AST {
             astPrintRecur(child, "$padding| ", outputFile)
         }
     }
+
+    fun getRoot(): Node? {
+        return semanticStack.top()
+    }
 }
 
 
