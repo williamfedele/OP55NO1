@@ -1,7 +1,6 @@
-package ast
+package semantic
 
 import parser.Parser
-import semantic.SymTabCreationVisitor
 import java.io.File
 
 fun main() {
@@ -11,7 +10,7 @@ fun main() {
 
     val files = listOf(
         File("bubblesort.src"),
-        File("polynomial.src"),
+        //File("polynomial.src"),
     )
 
     for (file: File in files) {
@@ -26,8 +25,33 @@ fun main() {
         parser.parse()
         val ast = parser.getAST()
         val symTabCreationVisitor = SymTabCreationVisitor()
-        if (ast.getRoot()!= null)
+        if (ast.getRoot()!= null) {
             symTabCreationVisitor.visit(ast.getRoot()!!)
+            recurPrintHelper(ast.getRoot()!!.symTab!!)
+        }
+
+
+
         else println("AST was null.")
+    }
+
+}
+
+fun recurPrintHelper(rootSymTab: SymTab) {
+    println("|    $rootSymTab")
+    println("|    =============================================================")
+    recurPrint(rootSymTab)
+}
+fun recurPrint(rootSymTab: SymTab, padding: String = "|") {
+    for (entry : SymTabEntry in rootSymTab.entries) {
+        println("$padding    $entry")
+        if (entry.type == EntryType.CLASS)
+            println("$padding    =============================================================")
+        if (entry.innerSymTab != null) {
+            println("$padding        ${entry.innerSymTab}")
+            println("$padding        =============================================================")
+            recurPrint(entry.innerSymTab, "$padding    ")
+        }
+
     }
 }
