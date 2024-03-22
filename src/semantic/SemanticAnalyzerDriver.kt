@@ -10,8 +10,8 @@ fun main() {
 
     val files = listOf(
         //File("bubblesort.src"),
-        File("polynomial.src"),
-        //File("polynomialsemanticerrors.src")
+        //File("polynomial.src"),
+        File("polynomialsemanticerrors.src")
     )
 
     for (file: File in files) {
@@ -25,18 +25,17 @@ fun main() {
         )
         parser.parse()
         val ast = parser.getAST()
-        val symTabCreationVisitor = SymTabCreationVisitor(
-            outputSymbolTables = File("$OUTPUT_DIR$file.outsymboltables"),
-            outputSemanticErrors = File("$OUTPUT_DIR$file.outsemanticerrors")
-        )
         if (ast.getRoot()!= null) {
-            symTabCreationVisitor.visitAndPrint(ast.getRoot()!!)
+            val symtabCreator = SymbolTableCreator(
+                outputSymbolTables = File("$OUTPUT_DIR$file.outsymboltables"),
+                outputSemanticErrors = File("$OUTPUT_DIR$file.outsemanticerrors")
+            )
+            symtabCreator.create(ast.getRoot()!!)
+            symtabCreator.dfs()
         }
         else println("AST was null.")
         // testing
-        val symtabCreator = SymbolTableCreator()
-        symtabCreator.create(ast.getRoot()!!)
-        symtabCreator.dfs()
+
 
 
 
