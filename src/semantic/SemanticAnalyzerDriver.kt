@@ -9,8 +9,9 @@ fun main() {
     val OUTPUT_DIR = "src/semantic/output/"
 
     val files = listOf(
-        File("bubblesort.src"),
-        //File("polynomial.src"),
+        //File("bubblesort.src"),
+        File("polynomial.src"),
+        //File("polynomialsemanticerrors.src")
     )
 
     for (file: File in files) {
@@ -24,34 +25,23 @@ fun main() {
         )
         parser.parse()
         val ast = parser.getAST()
-        val symTabCreationVisitor = SymTabCreationVisitor()
+        val symTabCreationVisitor = SymTabCreationVisitor(
+            outputSymbolTables = File("$OUTPUT_DIR$file.outsymboltables"),
+            outputSemanticErrors = File("$OUTPUT_DIR$file.outsemanticerrors")
+        )
         if (ast.getRoot()!= null) {
-            symTabCreationVisitor.visit(ast.getRoot()!!)
-            recurPrintHelper(ast.getRoot()!!.symTab!!)
+            symTabCreationVisitor.visitAndPrint(ast.getRoot()!!)
         }
-
-
-
         else println("AST was null.")
-    }
+        // testing
+        val symtabCreator = SymbolTableCreator()
+        symtabCreator.create(ast.getRoot()!!)
+        symtabCreator.dfs()
 
-}
 
-fun recurPrintHelper(rootSymTab: SymTab) {
-    println("|    $rootSymTab")
-    println("|    =============================================================")
-    recurPrint(rootSymTab)
-}
-fun recurPrint(rootSymTab: SymTab, padding: String = "|") {
-    for (entry : SymTabEntry in rootSymTab.entries) {
-        println("$padding    $entry")
-        if (entry.type == EntryType.CLASS)
-            println("$padding    =============================================================")
-        if (entry.innerSymTab != null) {
-            println("$padding        ${entry.innerSymTab}")
-            println("$padding        =============================================================")
-            recurPrint(entry.innerSymTab, "$padding    ")
-        }
+
 
     }
+
 }
+
