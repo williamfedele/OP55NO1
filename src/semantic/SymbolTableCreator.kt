@@ -4,10 +4,10 @@ import ast.Node
 import ast.NodeLabel
 import java.io.File
 import java.io.FileWriter
-import java.util.*
 
 class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors: File) {
     init {
+        // Create/Clear the output files
         FileWriter(outputSymbolTables).use { out -> out.write("") }
         FileWriter(outputSemanticErrors).use { out -> out.write("") }
     }
@@ -31,9 +31,9 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
 
                 var innerScope: HashMap<String, Entry> = linkedMapOf()
 
-                if (global.containsKey(structId)) {
+                if (global.containsKey(structId) && global[structId]!!.innerTable != null) {
                     writeError("Multiply declared class: $structId on line ${structIdToken.line}.")
-                    innerScope = global[structId]!!.innerTable
+                    innerScope = global[structId]!!.innerTable!!
                 }
                 else {
                     // inherit scope member
@@ -43,7 +43,6 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                     }
                     global[structId] = Class(
                         structId,
-                        Kind.CLASS,
                         innerScope,
                         inherits
                     )
@@ -77,11 +76,9 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                     for (dim: Node in paramDimList.children) {
                         typeDim.dim.add(dim.t!!.lexeme)
                     }
-                    val paramScope: HashMap<String, Entry> = linkedMapOf()
+
                     innerScope[paramId] = Param(
                         paramId,
-                        Kind.PARAM,
-                        paramScope,
                         typeDim
                     )
                     paramList.add(typeDim)
@@ -89,7 +86,6 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
 
                 scope[funcId] = Function(
                     funcId,
-                    Kind.FUNCTION,
                     innerScope,
                     visibility,
                     returnType,
@@ -115,11 +111,8 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                     variable.dim.add(dim.t!!.lexeme)
                 }
 
-                val innerScope: HashMap<String, Entry> = linkedMapOf()
-                scope[varId] = StructVarDecl(
+                scope[varId] = Data(
                     varId,
-                    Kind.DATA,
-                    innerScope,
                     variable,
                     visibility
                 )
@@ -143,13 +136,15 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                     }
                     else {
                         // check func exists within the impl
-                        val funcScope = implScope.innerTable[funcId]
-                        if (funcScope == null) {
+                        //val funcScope = implScope.innerTable?.get(funcId)
+                        if (implScope.innerTable?.get(funcId) == null) {
                             writeError("Undeclared member function definition: $funcId on line ${funcHeadToken.line}.")
                         }
                         else {
                             val funcBody = funcDef.children[1]
-                            create(funcBody, funcScope.innerTable)
+                            val funcScope = implScope.innerTable[funcId]
+                            if (funcScope?.innerTable != null)
+                                create(funcBody, funcScope.innerTable)
                         }
                     }
                 }
@@ -164,7 +159,8 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                 create(funcHead, scope)
 
                 val funcBody = node.children[1]
-                create(funcBody, scope[funcId]!!.innerTable)
+                if (scope[funcId] != null && scope[funcId]?.innerTable != null)
+                    create(funcBody, scope[funcId]?.innerTable!!)
             }
             NodeLabel.FUNCHEAD.toString() -> {
                 val funcHeadToken = node.children[0].t!!
@@ -199,20 +195,15 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
 
                         typeAndDim.dim.add(dimValue)
                     }
-                    val paramScope: HashMap<String, Entry> = linkedMapOf()
                     innerScope[paramId] = Param(
                         paramId,
-                        Kind.PARAM,
-                        paramScope,
                         typeAndDim
                     )
                     paramList.add(typeAndDim)
                 }
 
-
                 scope[funcId] = Function(
                     funcId,
-                    Kind.FUNCTION,
                     innerScope,
                     "public",
                     funcReturn,
@@ -241,8 +232,6 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                                 return
                             }
 
-                            val innerScope: HashMap<String, Entry> = linkedMapOf()
-
                             val dimList = mutableListOf<String>()
                             for (dim: Node in varTypeDimList.children) {
                                 dimList.add(dim.t!!.lexeme)
@@ -250,10 +239,8 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
 
                             val typeAndDim = Variable(varType, dimList)
 
-                            val varDecl = FuncVarDecl(
+                            val varDecl = Local(
                                 varId,
-                                Kind.LOCAL,
-                                innerScope,
                                 typeAndDim
                             )
                             scope[varId] = varDecl
@@ -265,6 +252,11 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
         }
     }
 
+    /**
+     * Entry point for a DFS style traversal of the hashmap symbol table
+     * Since a non-empty top level table implies it's a global table, this is explicitly printed.
+     *   There is no table naming at this level.
+     */
     fun dfs() {
         // the top level hashmap is the global scope
         // it doesn't have any sort of label so its printed here
@@ -275,31 +267,37 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
         }
     }
     private fun dfs2(scope: HashMap<String, Entry> = global, padding: String = "|") {
-        if (scope.isEmpty())
-            return
-
         for ((key, value) in scope) {
             writeOut("$padding    $value")
-            if (value.type == Kind.CLASS)
+            // separator for classes
+            if (value is Class)
                 writeOut("$padding    =============================================================")
 
-            if (value.innerTable.isNotEmpty()) {
+            if (value.innerTable != null) {
                 writeOut("$padding        table: $key")
                 writeOut("$padding        =============================================================")
+                dfs2(value.innerTable, "$padding    ")
             }
-            dfs2(value.innerTable, "$padding    ")
         }
     }
 
+    /**
+     * Detects duplicate function definitions.
+     * Duplicate definitions are those that have the same identifier and the same parameter list.
+     * If the parameter list is different, the function is overloaded instead.
+     */
     private fun isDuplicateDefinition(funcId: String, funcParams: List<Node>, scope: HashMap<String, Entry>): Boolean {
+        // function name must be the same to be considered potential duplicate
         if (!scope.containsKey(funcId))
             return false
 
+        // the function name must be a function. A function is allowed to have the same name as a class for example.
         if (scope[funcId] !is Function)
             return false
 
         val funcScope = scope[funcId] as Function
 
+        // build param list in the same way as it's done for function definitions
         val paramList = mutableListOf<Variable>()
         for (param: Node in funcParams) {
             val paramType = param.children[1].t!!.lexeme
@@ -311,6 +309,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
             }
             paramList.add(typeDim)
         }
+        // if the parameters are the same, this is a duplicate definition.
         return paramList == funcScope.params
     }
 
@@ -343,17 +342,10 @@ data class Variable (val type: String, val dim: MutableList<String> = mutableLis
     override fun equals(other: Any?): Boolean {
         return (other is Variable) && type == other.type && dim == other.dim
     }
-}
 
-enum class Kind {
-    CLASS,
-    FUNCTION,
-    DATA,
-    PARAM,
-    LOCAL;
-
-    override fun toString(): String {
-        return super.toString().lowercase(Locale.getDefault())
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + dim.hashCode()
+        return result
     }
 }
-

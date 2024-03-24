@@ -9,8 +9,8 @@ fun main() {
     val OUTPUT_DIR = "src/semantic/output/"
 
     val files = listOf(
-        //File("bubblesort.src"),
-        //File("polynomial.src"),
+        File("bubblesort.src"),
+        File("polynomial.src"),
         File("polynomialsemanticerrors.src")
     )
 
@@ -24,6 +24,7 @@ fun main() {
             outputAST = File("$OUTPUT_DIR$file.outast")
         )
         parser.parse()
+
         val ast = parser.getAST()
         if (ast.getRoot()!= null) {
             val symtabCreator = SymbolTableCreator(
@@ -34,11 +35,6 @@ fun main() {
             symtabCreator.dfs()
         }
         else println("AST was null.")
-        // testing
-
-
-
-
 
     }
 

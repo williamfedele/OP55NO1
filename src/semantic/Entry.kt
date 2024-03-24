@@ -1,30 +1,33 @@
 package semantic
 
-open class Entry(val name: String, val type: Kind, val innerTable: HashMap<String, Entry>)
-class Class(name: String, type: Kind, innerTable: HashMap<String, Entry>, val inherits: List<String>): Entry(name, type, innerTable) {
+/**
+ * Contains different types of symbol table entries in an inheritance structure
+ */
+open class Entry(val name: String, val innerTable: HashMap<String, Entry>? = null)
+class Class(name: String, innerTable: HashMap<String, Entry>, val inherits: List<String>): Entry(name, innerTable) {
     override fun toString(): String {
-        return "$type | $name : ${inherits.joinToString(", ")}"
+        return "class | $name : ${inherits.joinToString(", ")}"
     }
 }
-class Function(name: String, type: Kind, innerTable: HashMap<String, Entry>, val visibility: String, val returnType: String, val params: List<Variable>): Entry(name, type, innerTable) {
+class Function(name: String, innerTable: HashMap<String, Entry>, val visibility: String, val returnType: String, val params: List<Variable>): Entry(name, innerTable) {
     override fun toString(): String {
-        return "$type | $name | (${params.joinToString(", ")}): $returnType | $visibility"
+        return "function | $name | (${params.joinToString(", ")}): $returnType | $visibility"
     }
 }
-class Param (name: String, type: Kind, innerTable: HashMap<String, Entry>, val variable: Variable): Entry(name, type, innerTable) {
+class Param (name: String, val variable: Variable): Entry(name) {
     override fun toString(): String {
-        return "$type | $name | $variable"
-    }
-}
-
-class StructVarDecl (name: String, type: Kind, innerTable: HashMap<String, Entry>, val variable: Variable, val visibility: String): Entry(name, type, innerTable) {
-    override fun toString(): String {
-        return "$type | $name | $variable | $visibility"
+        return "param | $name | $variable"
     }
 }
 
-class FuncVarDecl (name: String, type: Kind, innerTable: HashMap<String, Entry>, val variable: Variable): Entry(name, type, innerTable) {
+class Data (name: String, val variable: Variable, val visibility: String): Entry(name) {
     override fun toString(): String {
-        return "$type | $name | $variable"
+        return "data | $name | $variable | $visibility"
+    }
+}
+
+class Local (name: String, val variable: Variable): Entry(name) {
+    override fun toString(): String {
+        return "local | $name | $variable"
     }
 }
