@@ -2,6 +2,7 @@ package semantic
 
 import ast.Node
 import ast.NodeLabel
+import lexer.TokenType
 import java.io.File
 import java.io.FileWriter
 
@@ -14,7 +15,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
 
     var global: HashMap<String, Entry> = linkedMapOf()
 
-    fun create(node: Node?, scope: HashMap<String, Entry> = global) {
+    fun create(node: Node?, scope: HashMap<String, Entry> = global, entry: Entry? = null) {
         if (node == null)
             return
         when (node.name) {
@@ -144,7 +145,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                             val funcBody = funcDef.children[1]
                             val funcScope = implScope.innerTable[funcId]
                             if (funcScope?.innerTable != null)
-                                create(funcBody, funcScope.innerTable)
+                                create(funcBody, funcScope.innerTable, funcScope)
                         }
                     }
                 }
@@ -215,6 +216,18 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                     when (child.name) {
                         NodeLabel.RETURN.toString() -> {
                             //handle return statements
+                            val returnToken = child.children[0].t
+                            val funcEntry = entry as Function
+                            if (returnToken == null)
+                                return
+
+                            if (funcEntry.returnType == "integer" && returnToken.type != TokenType.INTNUM)
+                                writeError("Type error in return statement: ${returnToken.lexeme} on line ${returnToken.line}, integer expected.")
+                            else if (funcEntry.returnType == "float" && returnToken.type != TokenType.FLOATNUM)
+                                writeError("Type error in return statement: ${returnToken.lexeme} on line ${returnToken.line}, float expected.")
+                            else if (funcEntry.returnType != "integer" && funcEntry.returnType != "float" && returnToken.type != TokenType.ID)
+                                writeError("Type error in return statement: ${returnToken.lexeme} on line ${returnToken.line}, id expected")
+                            //val i = 0
                         }
                         NodeLabel.ASSIGNSTAT.toString() -> {
                             //handle assign statements
@@ -318,7 +331,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
     }
 
     private fun writeError(s: String) {
-        FileWriter(outputSemanticErrors, true).use { out -> out.write("ERROR - $s\n") }
+        FileWriter(outputSemanticErrors, true).use { out -> out.write("ERROR   - $s\n") }
     }
 
     private fun writeWarning(s: String) {

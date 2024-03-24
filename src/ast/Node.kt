@@ -2,9 +2,7 @@ package ast
 
 import lexer.Token
 
-data class Node(val s: String, var parent: Node? = null, var t: Token? = null) {
-
-    val name = s
+data class Node(val name: String, var parent: Node? = null, var t: Token? = null) {
     val children = mutableListOf<Node>()
     var leftmostChild: Node? = null
     var leftmostSibling: Node? = null
