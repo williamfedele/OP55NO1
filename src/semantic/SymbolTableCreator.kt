@@ -49,7 +49,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                     )
                 }
                 for (child: Node in structdecls.children) {
-                    create(child, innerScope)
+                    create(child, innerScope, global[structId])
                 }
             }
             NodeLabel.STRUCTFUNCHEAD.toString() -> {
@@ -59,11 +59,25 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                 val funcParams = node.children[2]
                 val returnType = node.children[3].t!!.lexeme
 
-                if (isDuplicateDefinition(funcId, funcParams.children, scope))
-                    writeError("Multiply defined free function: $funcId on line ${funcHeadToken.line}.")
-
-                else if (scope.containsKey(funcId))
+                if (isDuplicateDefinition(funcId, funcParams.children, scope)) {
+                    writeError("Multiply defined member function: $funcId on line ${funcHeadToken.line}.")
+                    return
+                }
+                else if (scope.containsKey(funcId)) {
                     writeWarning("Overloaded member function: $funcId on line ${funcHeadToken.line}.")
+                    return
+                }
+
+                val classEntry = entry as Class
+
+                if (classEntry.inherits.isNotEmpty()) {
+                    for (inher in classEntry.inherits) {
+                        val inherScope = global[inher]
+                        if (inherScope != null && inherScope.innerTable?.get(funcId) != null) {
+                            writeWarning("Overridden inherited member function: $funcId on line ${funcHeadToken.line}.")
+                        }
+                    }
+                }
 
                 val innerScope: HashMap<String, Entry> = linkedMapOf()
 
@@ -88,6 +102,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                 scope[funcId] = Function(
                     funcId,
                     innerScope,
+                    entry?.name,
                     visibility,
                     returnType,
                     paramList
@@ -123,31 +138,44 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                 val implId = implToken.lexeme
                 val implDefs = node.children[1]
 
+                // check impl name exists
+                val implScope = global[implId]
+                if (implScope == null) {
+                    writeError("Undeclared class definition: $implId on line ${implToken.line}.")
+                    return
+                }
+                val funcList = mutableListOf<String>()
+                if (implScope.innerTable != null) {
+                    for ((key, value) in implScope.innerTable.entries) {
+                        if (value is Function) {
+                            funcList.add(key)
+                        }
+                    }
+                }
+
                 for (funcDef: Node in implDefs.children) {
-                    val funcHead = funcDef.children[0] // TODO, validate impl header matches struct declaration for errors
+                    val funcHead = funcDef.children[0]
                     val funcHeadToken = funcHead.children[0].t!!
                     val funcId = funcHeadToken.lexeme
                     val funcParams = funcHead.children[1]
                     val funcRet = funcHead.children[2].t!!.lexeme
 
-                    // check impl name exists
-                    val implScope = global[implId]
-                    if (implScope == null) {
-                        writeError("Undeclared class definition: $implId on line ${implToken.line}.")
+                    // check func exists within the impl
+                    // val funcScope = implScope.innerTable?.get(funcId)
+                    if (implScope.innerTable?.get(funcId) == null) {
+                        writeError("Undeclared member function definition: $funcId on line ${funcHeadToken.line}.")
                     }
                     else {
-                        // check func exists within the impl
-                        //val funcScope = implScope.innerTable?.get(funcId)
-                        if (implScope.innerTable?.get(funcId) == null) {
-                            writeError("Undeclared member function definition: $funcId on line ${funcHeadToken.line}.")
-                        }
-                        else {
-                            val funcBody = funcDef.children[1]
-                            val funcScope = implScope.innerTable[funcId]
-                            if (funcScope?.innerTable != null)
-                                create(funcBody, funcScope.innerTable, funcScope)
-                        }
+                        funcList.remove(funcId)
+
+                        val funcBody = funcDef.children[1]
+                        val funcScope = implScope.innerTable[funcId]
+                        if (funcScope?.innerTable != null)
+                            create(funcBody, funcScope.innerTable, funcScope)
                     }
+                }
+                for (funcId in funcList) {
+                    writeError("Undefined member function declaration: $funcId in class $implId.")
                 }
             }
             NodeLabel.FUNCDEF.toString() -> {
@@ -161,7 +189,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
 
                 val funcBody = node.children[1]
                 if (scope[funcId] != null && scope[funcId]?.innerTable != null)
-                    create(funcBody, scope[funcId]?.innerTable!!)
+                    create(funcBody, scope[funcId]?.innerTable!!, scope[funcId])
             }
             NodeLabel.FUNCHEAD.toString() -> {
                 val funcHeadToken = node.children[0].t!!
@@ -206,6 +234,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                 scope[funcId] = Function(
                     funcId,
                     innerScope,
+                    null,
                     "public",
                     funcReturn,
                     paramList
@@ -214,6 +243,18 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
             NodeLabel.FUNCBODY.toString() -> {
                 for (child: Node in node.children) {
                     when (child.name) {
+                        NodeLabel.IF.toString() -> {
+                            // handle if statements
+                        }
+                        NodeLabel.WHILE.toString() -> {
+                            // handle while statements
+                        }
+                        NodeLabel.FUNCCALL.toString() -> {
+                            // handle func calls
+                        }
+                        NodeLabel.ASSIGNSTAT.toString() -> {
+                            //handle assign statements
+                        }
                         NodeLabel.RETURN.toString() -> {
                             //handle return statements
                             val returnToken = child.children[0].t
@@ -229,9 +270,6 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                                 writeError("Type error in return statement: ${returnToken.lexeme} on line ${returnToken.line}, id expected")
                             //val i = 0
                         }
-                        NodeLabel.ASSIGNSTAT.toString() -> {
-                            //handle assign statements
-                        }
                         NodeLabel.VARDECL.toString() -> {
                             //handle var declarations
                             val varIdToken = child.children[0].t!!
@@ -243,6 +281,18 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                             if (scope.containsKey(varId)) {
                                 writeError("Multiply declared identifier in function: $varId on line ${varIdToken.line}.")
                                 return
+                            }
+
+                            // check for data member shadowing
+                            val funcEntry = entry as Function
+                            if (funcEntry.parentClass != null) {
+                                val inheritedClass = global[funcEntry.parentClass]
+                                if (inheritedClass != null) {
+                                    val inheritedScope = inheritedClass.innerTable
+                                    if (inheritedScope?.containsKey(varId) == true) {
+                                        writeWarning("Shadowed inherited data member: $varId on line ${varIdToken.line}")
+                                    }
+                                }
                             }
 
                             val dimList = mutableListOf<String>()
@@ -271,8 +321,6 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
      *   There is no table naming at this level.
      */
     fun dfs() {
-        // the top level hashmap is the global scope
-        // it doesn't have any sort of label so its printed here
         if (global.isNotEmpty()) {
             writeOut("|    table: global")
             writeOut("|    =============================================================")

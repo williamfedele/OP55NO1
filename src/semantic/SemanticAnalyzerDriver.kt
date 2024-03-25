@@ -37,6 +37,4 @@ fun main() {
         else println("AST was null.")
 
     }
-
 }
-

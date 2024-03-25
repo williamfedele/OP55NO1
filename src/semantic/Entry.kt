@@ -9,7 +9,7 @@ class Class(name: String, innerTable: HashMap<String, Entry>, val inherits: List
         return "class | $name : ${inherits.joinToString(", ")}"
     }
 }
-class Function(name: String, innerTable: HashMap<String, Entry>, val visibility: String, val returnType: String, val params: List<Variable>): Entry(name, innerTable) {
+class Function(name: String, innerTable: HashMap<String, Entry>, val parentClass: String?, val visibility: String, val returnType: String, val params: List<Variable>): Entry(name, innerTable) {
     override fun toString(): String {
         return "function | $name | (${params.joinToString(", ")}): $returnType | $visibility"
     }
