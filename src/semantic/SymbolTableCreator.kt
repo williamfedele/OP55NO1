@@ -308,7 +308,7 @@ class SymbolTableCreator(val outputSymbolTables: File, val outputSemanticErrors:
                             )
                             scope[varId] = varDecl
                         }
-                        else -> {println("Missing a case for ${child.name} in the FUNCBODY node handler.")}
+                        else -> {}
                     }
                 }
             }

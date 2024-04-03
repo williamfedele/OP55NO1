@@ -9,6 +9,7 @@ internal val STORE_WORD = "sw"
 internal val STORE_BYTE = "sb"
 
 // Arithmetic instructions
+  // With register operands
 internal val ADD = "add"
 internal val SUB = "sub"
 internal val MUL = "mul"
@@ -23,7 +24,7 @@ internal val LESS = "clt"
 internal val LESS_EQUAL = "cle"
 internal val GREATER = "cgt"
 internal val GREATER_EQUAL = "cge"
-
+  // With immediate operands
 internal val ADD_I = "addi"
 internal val SUB_I = "subi"
 internal val MUL_I = "muli"
