@@ -1,6 +1,6 @@
 package generation
 
-internal val REGISTERS = listOf("r15","r14","r13","r12","r11","r10","r9","r8","r7","r6","r5", "r4","r3","r2","r1","r0")
+internal val REGISTERS = listOf("r15","r14","r13","r12","r11","r10","r9","r8","r7","r6","r5", "r4","r3","r2","r1")
 
 // Data access instructions
 internal val LOAD_WORD = "lw"

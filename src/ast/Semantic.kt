@@ -86,5 +86,6 @@ enum class NodeLabel {
     RELOP,
     ARITHEXPR,
     NOT,
-    EMPTY
+    EMPTY,
+    INTLIT
 }
