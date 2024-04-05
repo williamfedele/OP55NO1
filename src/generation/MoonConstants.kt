@@ -46,6 +46,7 @@ internal val GET_CHAR = "getc"
 internal val PUT_CHAR = "putc"
 
 // Control instructions
+internal val ENTRY = "entry"
 internal val BRANCH_IF_ZERO = "bz"
 internal val BRANCH_IF_NONZERO = "bnz"
 internal val JUMP = "j"
@@ -53,4 +54,4 @@ internal val JUMP_REGISTER = "jr"
 internal val JUMP_LINK = "jl"
 internal val JUMP_LINK_REGISTER = "jlr"
 internal val NO_OP = "nop"
-internal val HALT = "halt"
+internal val HALT = "hlt"

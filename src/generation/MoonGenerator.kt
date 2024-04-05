@@ -2,11 +2,13 @@ package generation
 
 import ast.Node
 import ast.NodeLabel
+import parser.pop
 import semantic.Entry
+import semantic.Local
 import java.io.File
 import java.io.FileWriter
 
-class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: File) {
+class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
 
     init {
         FileWriter(outputMoon).use { out -> out.write("") }
@@ -17,64 +19,38 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
     val registerPool = ArrayDeque(REGISTERS)
 
     var tempVarCounter = 0
+    var labelCounter = 0
 
     fun generate(node: Node?) {
-        traverse(node)
-
-        moonExecCode += "putint   add    r2,r0,r0         % c := 0 (character)\n" +
-                "         add    r3,r0,r0         % s := 0 (sign)\n" +
-                "         addi   r4,r0,endbuf     % p is the buffer pointer\n" +
-                "         cge    r5,r1,r0\n" +
-                "         bnz    r5,putint1       % branch if n >= 0\n" +
-                "         addi   r3,r0,1          % s := 1\n" +
-                "         sub    r1,r0,r1         % n := -n\n" +
-                "putint1  modi   r2,r1,10         % c := n mod 10\n" +
-                "         addi   r2,r2,48         % c := c + '0'\n" +
-                "         subi   r4,r4,1          % p := p - 1\n" +
-                "         sb     0(r4),r2         % buf[p] := c\n" +
-                "         divi   r1,r1,10         % n := n div 10\n" +
-                "         bnz    r1,putint1       % do next digit\n" +
-                "         bz     r3,putint2       % branch if n >= 0\n" +
-                "         addi   r2,r0,45         % c := '-'\n" +
-                "         subi   r4,r4,1          % p := p - 1\n" +
-                "         sb     0(r4),r2         % buf[p] := c\n" +
-                "putint2  lb     r2,0(r4)         % c := buf[p]\n" +
-                "         putc   r2               % write c\n" +
-                "         addi   r4,r4,1          % p := p + 1\n" +
-                "         cgei   r5,r4,endbuf\n" +
-                "         bz     r5,putint2       % branch if more digits\n" +
-                "         jr     r15              % return\n" +
-                "\n" +
-                "         res    20               % digit buffer\n" +
-                "endbuf\n"
+        traverse(node, global)
         writeMoon(moonExecCode)
         writeMoon("\n$moonDataCode")
     }
-    fun traverse(node: Node?) {
+    fun traverse(node: Node?, symTab: HashMap<String, Entry>) {
         if (node == null)
             return
         when (node.name) {
             NodeLabel.PROG.toString() -> {
-                moonExecCode += indent()+"entry\n"
+                moonExecCode += indent()+"$ENTRY\n"
                 for (child: Node in node.children) {
-                    traverse(child)
+                    traverse(child, global)
                 }
-                moonDataCode += indent()+"% buffer space used for console output\n"
-                moonDataCode += indent("buf")+"res 20\n"
-                moonExecCode += indent()+"hlt\n"
+                moonExecCode += indent()+"$HALT\n"
             }
             NodeLabel.FUNCDEF.toString() -> {
                 val funcHead = node.children[0]
                 val funcHeadToken = funcHead.children[0].t!!
                 val funcId = funcHeadToken.lexeme
                 val funcBody = node.children[1]
-                if (funcId == "main") {
-                    traverse(funcBody)
-                }
+
+                val innerTable = global[funcId]?.innerTable
+                if (innerTable != null)
+                    traverse(funcBody, innerTable)
+
             }
             NodeLabel.FUNCBODY.toString() -> {
                 for (child: Node in node.children) {
-                    traverse(child)
+                    traverse(child, symTab)
                 }
             }
             NodeLabel.VARDECL.toString() -> {
@@ -100,15 +76,8 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
                 }
             }
             NodeLabel.ASSIGNSTAT.toString() -> {
-                // child 1 gets the value of child 2
-                // child2 = addop
-                // addop adds child 1 and child 2
-                // child 1 is int
-                // child 2 is arithexpr is multop
-                // multop multiplies child 1 and child 2
-                // both child 1 and child 2 are int
                 for (child in node.children)
-                    traverse(child)
+                    traverse(child, symTab)
 
                 val localRegister = registerPool.removeLast()
 
@@ -120,13 +89,22 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
             }
             NodeLabel.INTLIT.toString() -> {
                 node.moonVarName = getTempVar()
+                val intValue = node.t!!.lexeme
+                val localRegister = registerPool.removeLast()
+
                 moonDataCode += indent()+" % space for temp variable\n"
                 moonDataCode += indent(node.moonVarName)+"res 4\n"
+                moonExecCode += indent()+"$ADD_I $localRegister,r0,$intValue\n"
+                moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
+
+                registerPool.add(localRegister)
             }
             NodeLabel.ADDOP.toString() -> {
                 for (child in node.children)
-                    traverse(child)
+                    traverse(child, symTab)
                 node.moonVarName = getTempVar()
+
+                val addOp = node.children[1]
 
                 val localRegister = registerPool.removeLast()
                 val leftRegister = registerPool.removeLast()
@@ -134,8 +112,19 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
 
                 moonExecCode += indent()+" % addition\n"
                 moonExecCode += indent()+"$LOAD_WORD $leftRegister,${node.children[0].moonVarName}(r0)\n"
-                moonExecCode += indent()+"$LOAD_WORD $rightRegister,${node.children[1].moonVarName}(r0)\n"
-                moonExecCode += indent()+"$ADD $localRegister,$leftRegister,$rightRegister\n"
+                moonExecCode += indent()+"$LOAD_WORD $rightRegister,${node.children[2].moonVarName}(r0)\n"
+                when (addOp.name) {
+                    NodeLabel.PLUS.toString() -> {
+                        moonExecCode += indent()+"$ADD $localRegister,$leftRegister,$rightRegister\n"
+                    }
+                    NodeLabel.MINUS.toString() -> {
+                        moonExecCode += indent()+"$SUB $localRegister,$leftRegister,$rightRegister\n"
+                    }
+                    NodeLabel.OR.toString() -> {
+                        println("ADDOP - OR NOT IMPLEMENTED")
+                    }
+                }
+
                 moonDataCode += node.moonVarName.padEnd(lineUp)+"dw 0\n"
                 moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
 
@@ -145,8 +134,10 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
             }
             NodeLabel.MULTOP.toString() -> {
                 for (child in node.children)
-                    traverse(child)
+                    traverse(child, symTab)
                 node.moonVarName = getTempVar()
+
+                val multOp = node.children[1]
 
                 val localRegister = registerPool.removeLast()
                 val leftRegister = registerPool.removeLast()
@@ -154,7 +145,20 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
 
                 moonExecCode += indent()+" % multiplication\n"
                 moonExecCode += indent()+"$LOAD_WORD $leftRegister,${node.children[0].moonVarName}(r0)\n"
-                moonExecCode += indent()+"$LOAD_WORD $rightRegister,${node.children[1].moonVarName}(r0)\n"
+                moonExecCode += indent()+"$LOAD_WORD $rightRegister,${node.children[2].moonVarName}(r0)\n"
+
+                when (multOp.name) {
+                    NodeLabel.MULT.toString() -> {
+                        moonExecCode += indent()+"$MUL $localRegister,$leftRegister,$rightRegister\n"
+                    }
+                    NodeLabel.DIV.toString() -> {
+                        moonExecCode += indent()+"$DIV $localRegister,$leftRegister,$rightRegister\n"
+                    }
+                    NodeLabel.AND.toString() -> {
+                        println("MULTOP - AND NOT IMPLEMENTED")
+                    }
+                }
+
                 moonExecCode += indent()+"$MUL $localRegister,$leftRegister,$rightRegister\n"
                 moonDataCode += node.moonVarName.padEnd(lineUp)+"dw 0\n"
                 moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
@@ -168,7 +172,7 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
                 if (node.children.count() > 1)
                     println("More than one child in an ARITHEXPR.")
                 val child = node.children[0]
-                traverse(child)
+                traverse(child, symTab)
                 node.moonVarName = child.moonVarName
             }
             NodeLabel.VARIABLE.toString() -> {
@@ -182,29 +186,119 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
                 if (node.children.count() > 1)
                     println("More than one child in a WRITE.")
                 val child = node.children[0]
-                traverse(child)
+                traverse(child, symTab)
 
                 val localRegister = registerPool.removeLast()
                 val tempR = registerPool.removeLast()
-                /*
-                moonExecCode += indent()+" % printing ${child.moonVarName}\n"
-                moonExecCode += indent()+"$LOAD_WORD $localRegister,${child.moonVarName}(r0)\n"
-                moonExecCode += indent()+"% put value on stack\n"
-                moonExecCode += indent()+"$STORE_WORD -8(r14),$localRegister\n"
-                moonExecCode += indent()+"% link buffer to stack\n"
-                moonExecCode += indent()+"$ADD_I $localRegister,r0,buf\n"
-                moonExecCode += indent()+"$STORE_WORD -12(r14),$localRegister\n"
-                moonExecCode += indent()+"% convert int to string for output\n"
-                moonExecCode += indent()+"$JUMP_LINK r15, intstr\n"
-                moonExecCode += indent()+"$STORE_WORD -8(r14),r13\n"
-                moonExecCode += indent()+"% output to console\n"
-                moonExecCode += indent()+"$JUMP_LINK r15, putstr\n"
-                */
+
+                // call putint in util.m
+                // requires the int in r1, returns to r15
+                moonExecCode += indent()+" % printing an int ${child.moonVarName}\n"
                 moonExecCode += indent()+"$LOAD_WORD r1, ${child.moonVarName}(r0)\n"
                 moonExecCode += indent()+"$JUMP_LINK r15, putint\n"
-                // TODO this is outputting 0. figure out why!
+
                 registerPool.add(tempR)
                 registerPool.add(localRegister)
+            }
+            NodeLabel.READ.toString() -> {
+                // read should only ever have 1 child, warn if not
+                if (node.children.count() > 1)
+                    println("More than one child in a READ.")
+                val child = node.children[0]
+                traverse(child, symTab)
+
+                val localRegister = registerPool.removeLast()
+
+                var local = symTab[child.moonVarName]
+                if (local != null) {
+                    local = local as Local
+                    when (local.variable.type) {
+                        "integer" -> {
+                            moonExecCode += indent()+" % reading an int \n"
+                            moonExecCode += indent()+"$JUMP_LINK r15, getint\n"
+                            moonExecCode += indent()+"$STORE_WORD ${child.moonVarName}(r0), r1\n"
+                        }
+                    }
+                }
+
+                registerPool.add(localRegister)
+            }
+            NodeLabel.IF.toString() -> {
+                moonExecCode += indent("\n")+" % generating code for if branch\n"
+                val relExpr = node.children[0]
+                traverse(relExpr, symTab)
+
+                val localRegister = registerPool.pop()
+                val falseBlockLabel = getLabel()
+                val skipFalseLabel = getLabel()
+                moonExecCode += indent()+"$LOAD_WORD $localRegister, ${relExpr.moonVarName}(r0)\n"
+                moonExecCode += indent()+"$BRANCH_IF_ZERO $localRegister, $falseBlockLabel\n"
+
+                val trueStatBlock = node.children[1]
+                traverse(trueStatBlock, symTab)
+                moonExecCode += indent()+"$JUMP $skipFalseLabel\n"
+                moonExecCode += indent(falseBlockLabel)+"\n"
+                val falseStatBlock = node.children[2]
+                traverse(falseStatBlock, symTab)
+                moonExecCode += indent(skipFalseLabel)+"\n"
+
+            }
+            NodeLabel.RELEXPR.toString() -> {
+                moonExecCode += indent()+" % generating relexpr\n"
+                val lhs = node.children[0]
+                val op = node.children[1]
+                val rhs = node.children[2]
+                traverse(lhs, symTab)
+                traverse(rhs, symTab)
+
+                val tempVar = getTempVar()
+                node.moonVarName = tempVar
+
+                moonDataCode += indent()+" % space for temp variable\n"
+                moonDataCode += indent(node.moonVarName)+"res 4\n"
+
+                val localRegister = registerPool.removeLast()
+                val leftRegister = registerPool.removeLast()
+                val rightRegister = registerPool.removeLast()
+
+                // TODO other cases
+                when (op.name) {
+                    NodeLabel.EQ.toString() -> {
+
+                    }
+                    NodeLabel.NEQ.toString() -> {
+
+                    }
+                    NodeLabel.LT.toString() -> {
+
+                    }
+                    NodeLabel.GT.toString() -> {
+                        // cgt Ri,Rj,Rk
+                        moonExecCode += indent()+"$LOAD_WORD $leftRegister, ${lhs.moonVarName}(r0)\n"
+                        moonExecCode += indent()+"$LOAD_WORD $rightRegister, ${rhs.moonVarName}(r0)\n"
+                        moonExecCode += indent()+"cgt $localRegister,$leftRegister,$rightRegister\n"
+                        moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0), $localRegister\n"
+                    }
+                    NodeLabel.LEQ.toString() -> {
+
+                    }
+                    NodeLabel.GEQ.toString() -> {
+
+                    }
+                }
+
+                moonExecCode += indent()+"\n"
+                registerPool.add(rightRegister)
+                registerPool.add(leftRegister)
+                registerPool.add(localRegister)
+            }
+            NodeLabel.STATBLOCK.toString() -> {
+                for (child in node.children) {
+                    traverse(child, symTab)
+                }
+            }
+            NodeLabel.WHILE.toString() -> {
+                // TODO handle loop branches
             }
         }
     }
@@ -215,6 +309,10 @@ class MoonGenerator (val symbolTable: HashMap<String, Entry>, val outputMoon: Fi
 
     private fun getTempVar(): String {
         return "t${tempVarCounter++}"
+    }
+
+    private fun getLabel(): String {
+        return "L${labelCounter++}"
     }
 
     private fun indent(s: String = ""): String {

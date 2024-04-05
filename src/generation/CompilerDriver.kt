@@ -36,7 +36,7 @@ fun main() {
             symtabCreator.dfs()
 
             val moonGenerator = MoonGenerator(
-                symbolTable = symtabCreator.global,
+                global = symtabCreator.global,
                 outputMoon = File("$OUTPUT_DIR$file.moon")
             )
             moonGenerator.generate(ast.getRoot())

@@ -52,12 +52,12 @@ func main() -> void
   let z: integer;
   y = 1 + 2 * 3;
   read(x);
-  write(y);
+
   if (x > y + 10)
     then {
-      //write(x+10);
+      write(x+10);
     } else {
-      //write(x+1);
+      write(x+1);
   };
   z = 0;
   while (z <= 10) {
