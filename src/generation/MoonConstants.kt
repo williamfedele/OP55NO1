@@ -1,6 +1,12 @@
 package generation
 
 internal val REGISTERS = listOf("r15","r14","r13","r12","r11","r10","r9","r8","r7","r6","r5", "r4","r3","r2","r1")
+// moon words are 32 bit/4 bytes
+internal val WORD_SIZE = 4
+// integers are 32 bits,4 bytes. bit 0 is sign bit. stored in 2's complement
+internal val INT_SIZE = WORD_SIZE
+// floats have 64 bits. one for the int before the period, one for the fraction, one for the scientific notation exponent
+internal val FLOAT_SIZE = 2 * WORD_SIZE
 
 // Data access instructions
 internal val LOAD_WORD = "lw"

@@ -99,5 +99,6 @@ enum class NodeLabel {
     LEQ,
     EQ,
     NEQ,
-    INTLIT
+    INTLIT,
+    FLOATLIT
 }

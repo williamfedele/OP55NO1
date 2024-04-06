@@ -2,7 +2,6 @@ package generation
 
 import ast.Node
 import ast.NodeLabel
-import parser.pop
 import semantic.Entry
 import semantic.Local
 import java.io.File
@@ -31,8 +30,12 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
             return
         when (node.name) {
             NodeLabel.PROG.toString() -> {
-                moonExecCode += indent()+"$ENTRY\n"
+                moonDataCode += indent()+"% carriage return\n"
+                moonDataCode += indent("cr")+"db 13,10\n"
+                moonDataCode += indent()+"align\n"
+
                 for (child: Node in node.children) {
+                    moonExecCode += indent()+"% new scope\n"
                     traverse(child, global)
                 }
                 moonExecCode += indent()+"$HALT\n"
@@ -42,6 +45,9 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val funcHeadToken = funcHead.children[0].t!!
                 val funcId = funcHeadToken.lexeme
                 val funcBody = node.children[1]
+
+                if (funcId == "main")
+                    moonExecCode += indent("\n")+" $ENTRY\n"
 
                 val innerTable = global[funcId]?.innerTable
                 if (innerTable != null)
@@ -59,32 +65,48 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val varType = node.children[1].t!!.lexeme
                 val dimList = node.children[2].children
 
+                moonDataCode += indent()+"% space for variable $varId\n"
+
+                // calculate the amount of allocations to make in the case of arrays
+                var multDim = 1
+                for (str in dimList) {
+                    try {
+                        val parsedInt = str.t!!.lexeme.toInt()
+                        multDim *= parsedInt
+                    } catch (e: NumberFormatException) {
+                        // not a valid int
+                    }
+                }
+
                 when (varType) {
                     "integer" -> {
-                        var multDim = 1
-                        for (str in dimList) {
-                            try {
-                                val parsedInt = str.t!!.lexeme.toInt()
-                                multDim *= parsedInt
-                            } catch (e: NumberFormatException) {
-                                // not a valid int
-                            }
-                        }
-                        moonDataCode += indent()+" % space for variable $varId\n"
-                        moonDataCode += indent(varId)+"res ${multDim*4}\n"
+                        moonDataCode += indent(varId)+"res ${multDim * INT_SIZE}\n"
+                    }
+                    "float" -> {
+                        moonDataCode += indent(varId)+"res ${multDim * FLOAT_SIZE}\n"
+                    }
+                    else -> {
+                        println("unhandle case in VARDECL: $varType")
                     }
                 }
             }
             NodeLabel.ASSIGNSTAT.toString() -> {
-                for (child in node.children)
-                    traverse(child, symTab)
+                val lhs = node.children[0]
+                traverse(lhs, symTab)
+                val rhs = node.children[1]
+
+                traverse(rhs, symTab)
 
                 val localRegister = registerPool.removeLast()
+                val offsetRegister = registerPool.removeLast()
 
-                moonExecCode += indent()+" % assigning variable as expression\n"
-                moonExecCode += indent()+"$LOAD_WORD $localRegister,${node.children[1].moonVarName}(r0)\n"
-                moonExecCode += indent()+"$STORE_WORD ${node.children[0].moonVarName}(r0),$localRegister\n"
+                moonExecCode += indent("\n")+" % assigning variable as expression\n"
+                // load offset
+                moonExecCode += indent()+"$ADD_I $offsetRegister,r0,${lhs.moonOffset}\n"
+                moonExecCode += indent()+"$LOAD_WORD $localRegister,${rhs.moonVarName}(r0)\n"
+                moonExecCode += indent()+"$STORE_WORD ${lhs.moonVarName}($offsetRegister),$localRegister\n"
 
+                registerPool.add(offsetRegister)
                 registerPool.add(localRegister)
             }
             NodeLabel.INTLIT.toString() -> {
@@ -92,13 +114,40 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val intValue = node.t!!.lexeme
                 val localRegister = registerPool.removeLast()
 
-                moonDataCode += indent()+" % space for temp variable\n"
+                moonDataCode += indent()+"% space for temp int literal\n"
                 moonDataCode += indent(node.moonVarName)+"res 4\n"
+                moonExecCode += indent("\n")+" % putting int literal $intValue in register\n"
                 moonExecCode += indent()+"$ADD_I $localRegister,r0,$intValue\n"
                 moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
 
                 registerPool.add(localRegister)
             }
+            /* WIP
+            NodeLabel.FLOATLIT.toString() -> {
+                node.moonVarName = getTempVar()
+                val float = node.t!!.lexeme
+                val expSplit = float.split("e") // [5.3, +5]
+
+                val intValue = (expSplit[0].toDouble() * 1000).toInt()
+
+                val localRegister = registerPool.removeLast()
+
+                moonDataCode += indent()+"% space for temp variable\n"
+                moonDataCode += indent(node.moonVarName)+"res $INT_SIZE\n"
+                moonExecCode += indent()+"$ADD_I $localRegister,r0,$intValue\n"
+                moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
+
+                if (expSplit.size > 1) {
+
+                    moonDataCode += indent()+"% space for temp variable exponent\n"
+                    moonDataCode += indent(node.moonVarName)+"res $INT_SIZE\n"
+                    moonExecCode += indent()+"$ADD_I $localRegister,r0,${expSplit[1]}\n"
+                    moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
+                }
+
+                registerPool.add(localRegister)
+
+            }*/
             NodeLabel.ADDOP.toString() -> {
                 for (child in node.children)
                     traverse(child, symTab)
@@ -110,9 +159,11 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val leftRegister = registerPool.removeLast()
                 val rightRegister = registerPool.removeLast()
 
-                moonExecCode += indent()+" % addition\n"
+                moonExecCode += indent("\n")+" % addition\n"
                 moonExecCode += indent()+"$LOAD_WORD $leftRegister,${node.children[0].moonVarName}(r0)\n"
                 moonExecCode += indent()+"$LOAD_WORD $rightRegister,${node.children[2].moonVarName}(r0)\n"
+
+                // pick the appropriate instruction for the type of add op
                 when (addOp.name) {
                     NodeLabel.PLUS.toString() -> {
                         moonExecCode += indent()+"$ADD $localRegister,$leftRegister,$rightRegister\n"
@@ -121,7 +172,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                         moonExecCode += indent()+"$SUB $localRegister,$leftRegister,$rightRegister\n"
                     }
                     NodeLabel.OR.toString() -> {
-                        println("ADDOP - OR NOT IMPLEMENTED")
+                        moonExecCode += indent()+"$OR $localRegister,$leftRegister,$rightRegister\n"
                     }
                 }
 
@@ -143,10 +194,11 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val leftRegister = registerPool.removeLast()
                 val rightRegister = registerPool.removeLast()
 
-                moonExecCode += indent()+" % multiplication\n"
+                moonExecCode += indent("\n")+" % multiplication\n"
                 moonExecCode += indent()+"$LOAD_WORD $leftRegister,${node.children[0].moonVarName}(r0)\n"
                 moonExecCode += indent()+"$LOAD_WORD $rightRegister,${node.children[2].moonVarName}(r0)\n"
 
+                // pick the appropriate instruction for the type of mult op
                 when (multOp.name) {
                     NodeLabel.MULT.toString() -> {
                         moonExecCode += indent()+"$MUL $localRegister,$leftRegister,$rightRegister\n"
@@ -155,11 +207,10 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                         moonExecCode += indent()+"$DIV $localRegister,$leftRegister,$rightRegister\n"
                     }
                     NodeLabel.AND.toString() -> {
-                        println("MULTOP - AND NOT IMPLEMENTED")
+                        moonExecCode += indent()+"$AND $localRegister,$leftRegister,$rightRegister\n"
                     }
                 }
 
-                moonExecCode += indent()+"$MUL $localRegister,$leftRegister,$rightRegister\n"
                 moonDataCode += node.moonVarName.padEnd(lineUp)+"dw 0\n"
                 moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0),$localRegister\n"
 
@@ -177,8 +228,31 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
             }
             NodeLabel.VARIABLE.toString() -> {
                 val varId = node.children[0].t!!.lexeme
-                val varIndiceList = node.children[1]
+                val varIndiceList = node.children[1].children
 
+                if (varIndiceList.isNotEmpty()) {
+                    val localEntry = symTab[varId] as Local
+                    val arrShape = localEntry.variable.dim
+
+                    // n-dimensional arrays are stored in contiguous memory
+                    // calculate the stride to ensure we skip over dimensions as we index the array
+                    // Ex: for a [2][4][3] array:
+                    //      first dimension changes require stepping over 12 (4*3) integers (48 bytes)
+                    //      second dimension changes require stepping over 3 integers (12 bytes)
+                    //      third dimension changes require stepping over 1 integer (4 bytes)
+                    val strides = MutableList(arrShape.size){1}
+                    for (i in 0..<arrShape.size) {
+                        for (j in i+1..<arrShape.size) {
+                            strides[i] *= arrShape[j].toInt()
+                        }
+                    }
+
+                    for (i in 0..<varIndiceList.size) {
+                        val intValue = varIndiceList[i].t!!.lexeme.toInt()
+                        if (localEntry.variable.type == "integer")
+                            node.moonOffset += intValue * INT_SIZE * strides[i]
+                    }
+                }
                 node.moonVarName = varId
             }
             NodeLabel.WRITE.toString() -> {
@@ -188,17 +262,29 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val child = node.children[0]
                 traverse(child, symTab)
 
-                val localRegister = registerPool.removeLast()
-                val tempR = registerPool.removeLast()
-
+                val offsetRegister = registerPool.removeLast()
                 // call putint in util.m
                 // requires the int in r1, returns to r15
-                moonExecCode += indent()+" % printing an int ${child.moonVarName}\n"
-                moonExecCode += indent()+"$LOAD_WORD r1, ${child.moonVarName}(r0)\n"
+                // load offset
+                moonExecCode += indent()+"$ADD_I $offsetRegister,r0,${child.moonOffset}\n"
+                moonExecCode += indent("\n")+" % printing an int ${child.moonVarName}\n"
+                moonExecCode += indent()+"$LOAD_WORD r1, ${child.moonVarName}($offsetRegister)\n"
                 moonExecCode += indent()+"$JUMP_LINK r15, putint\n"
+                /*
+                if (node.floatExpMoonVarName == "unset") {
 
-                registerPool.add(tempR)
-                registerPool.add(localRegister)
+                }
+                else {
+                    // float value, convert back to decimal and combine with exponent tempvar
+                    moonExecCode += indent("\n")+" % printing an int ${child.moonVarName}\n"
+
+                }
+                */
+
+                // output a newline
+                moonExecCode += indent()+"$ADD_I r1,r0,cr\n"
+                moonExecCode += indent()+"$JUMP_LINK r15, putstr\n"
+                registerPool.add(offsetRegister)
             }
             NodeLabel.READ.toString() -> {
                 // read should only ever have 1 child, warn if not
@@ -214,7 +300,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                     local = local as Local
                     when (local.variable.type) {
                         "integer" -> {
-                            moonExecCode += indent()+" % reading an int \n"
+                            moonExecCode += indent("\n")+" % reading an int \n"
                             moonExecCode += indent()+"$JUMP_LINK r15, getint\n"
                             moonExecCode += indent()+"$STORE_WORD ${child.moonVarName}(r0), r1\n"
                         }
@@ -228,9 +314,12 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val relExpr = node.children[0]
                 traverse(relExpr, symTab)
 
-                val localRegister = registerPool.pop()
+                val localRegister = registerPool.removeLast()
                 val falseBlockLabel = getLabel()
                 val skipFalseLabel = getLabel()
+
+                // get the relexpr result and assess
+                moonExecCode += indent("\n")+" % if condition\n"
                 moonExecCode += indent()+"$LOAD_WORD $localRegister, ${relExpr.moonVarName}(r0)\n"
                 moonExecCode += indent()+"$BRANCH_IF_ZERO $localRegister, $falseBlockLabel\n"
 
@@ -242,9 +331,11 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 traverse(falseStatBlock, symTab)
                 moonExecCode += indent(skipFalseLabel)+"\n"
 
+                registerPool.add(localRegister)
+
             }
             NodeLabel.RELEXPR.toString() -> {
-                moonExecCode += indent()+" % generating relexpr\n"
+                moonExecCode += indent()+"% relexpr\n"
                 val lhs = node.children[0]
                 val op = node.children[1]
                 val rhs = node.children[2]
@@ -254,40 +345,37 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val tempVar = getTempVar()
                 node.moonVarName = tempVar
 
-                moonDataCode += indent()+" % space for temp variable\n"
+                moonDataCode += indent()+"% space for temp variable\n"
                 moonDataCode += indent(node.moonVarName)+"res 4\n"
 
                 val localRegister = registerPool.removeLast()
                 val leftRegister = registerPool.removeLast()
                 val rightRegister = registerPool.removeLast()
 
-                // TODO other cases
+                moonExecCode += indent()+"$LOAD_WORD $leftRegister, ${lhs.moonVarName}(r0)\n"
+                moonExecCode += indent()+"$LOAD_WORD $rightRegister, ${rhs.moonVarName}(r0)\n"
                 when (op.name) {
                     NodeLabel.EQ.toString() -> {
-
+                        moonExecCode += indent()+"ceq $localRegister,$leftRegister,$rightRegister\n"
                     }
                     NodeLabel.NEQ.toString() -> {
-
+                        moonExecCode += indent()+"cne $localRegister,$leftRegister,$rightRegister\n"
                     }
                     NodeLabel.LT.toString() -> {
-
+                        moonExecCode += indent()+"clt $localRegister,$leftRegister,$rightRegister\n"
                     }
                     NodeLabel.GT.toString() -> {
-                        // cgt Ri,Rj,Rk
-                        moonExecCode += indent()+"$LOAD_WORD $leftRegister, ${lhs.moonVarName}(r0)\n"
-                        moonExecCode += indent()+"$LOAD_WORD $rightRegister, ${rhs.moonVarName}(r0)\n"
                         moonExecCode += indent()+"cgt $localRegister,$leftRegister,$rightRegister\n"
-                        moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0), $localRegister\n"
                     }
                     NodeLabel.LEQ.toString() -> {
-
+                        moonExecCode += indent()+"cle $localRegister,$leftRegister,$rightRegister\n"
                     }
                     NodeLabel.GEQ.toString() -> {
-
+                        moonExecCode += indent()+"cge $localRegister,$leftRegister,$rightRegister\n"
                     }
                 }
+                moonExecCode += indent()+"$STORE_WORD ${node.moonVarName}(r0), $localRegister\n"
 
-                moonExecCode += indent()+"\n"
                 registerPool.add(rightRegister)
                 registerPool.add(leftRegister)
                 registerPool.add(localRegister)
@@ -298,7 +386,32 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 }
             }
             NodeLabel.WHILE.toString() -> {
-                // TODO handle loop branches
+                moonExecCode += indent("\n")+" % generating code for while loop\n"
+                val relExpr = node.children[0]
+
+                val localRegister = registerPool.removeLast()
+                val loopStartLabel = getLabel()
+                val loopExitLabel = getLabel()
+
+                moonExecCode += loopStartLabel+"\n"
+                traverse(relExpr, symTab)
+
+                // get the relexpr result and assess
+                moonExecCode += indent("\n")+" % while condition\n"
+                moonExecCode += indent()+"$LOAD_WORD $localRegister, ${relExpr.moonVarName}(r0)\n"
+                moonExecCode += indent()+"$BRANCH_IF_ZERO $localRegister, $loopExitLabel\n"
+
+                val statBlock = node.children[1]
+                traverse(statBlock, symTab)
+
+                moonExecCode += indent()+"$JUMP $loopStartLabel\n"
+                moonExecCode += loopExitLabel+"\n"
+
+                registerPool.add(localRegister)
+            }
+            NodeLabel.FUNCCALL.toString() -> {
+                // TODO
+                // as functions are read, create and assign labels, find their labels in here and jump-link
             }
         }
     }

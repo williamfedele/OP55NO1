@@ -13,7 +13,8 @@ fun main() {
     val files = listOf(
         //File("bubblesort.src"),
         //File("polynomial.src"),
-        File("simplemain.src".split('.')[0])
+        //File("simplemain.src".split('.')[0]),
+        File("s2.src".split('.')[0])
     )
     for (file: File in files) {
         val parser = Parser (
@@ -34,6 +35,11 @@ fun main() {
             )
             symtabCreator.create(ast.getRoot())
             symtabCreator.dfs()
+
+            val allocationGenerator = AllocationGenerator(
+                global = symtabCreator.global
+            )
+            //allocationGenerator.generate(ast.getRoot())
 
             val moonGenerator = MoonGenerator(
                 global = symtabCreator.global,
