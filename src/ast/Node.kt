@@ -8,7 +8,7 @@ data class Node(val name: String, var parent: Node? = null, var t: Token? = null
     var leftmostSibling: Node? = null
     var rightSibling: Node? = null
 
-    var moonVarName: String = "MOONVARNAME"
+    var moonVarName: String = ""
     var moonOffset: Int = 0
     //var floatExpMoonVarName: String = "unset"
 

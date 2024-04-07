@@ -4,6 +4,7 @@ import ast.Node
 import ast.NodeLabel
 import semantic.Entry
 import semantic.Local
+import semantic.Param
 import java.io.File
 import java.io.FileWriter
 
@@ -42,9 +43,33 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
             }
             NodeLabel.FUNCDEF.toString() -> {
                 val funcHead = node.children[0]
+                val funcRet = funcHead.children[2].name
                 val funcHeadToken = funcHead.children[0].t!!
                 val funcId = funcHeadToken.lexeme
                 val funcBody = node.children[1]
+
+                // set function label
+                val fn = symTab[funcId] as semantic.Function
+                fn.moonLabel = getLabel()+"\n"
+                moonExecCode += fn.moonLabel
+
+                // set return temp var
+                if (funcRet != "VOID") {
+                    fn.moonReturnLabel = getTempVar()+"\n"
+                    when (funcRet) {
+                        "INTEGER" -> {
+                            moonDataCode += indent(fn.moonReturnLabel)+"res $INT_SIZE\n"
+                        }
+                        "FLOAT" -> {
+                            println("float return variable not allocated")
+                        }
+                        "ID" -> {
+                            println("id return variable not allocated")
+                        }
+                    }
+                }
+
+                traverse(funcHead, fn.innerTable!!)
 
                 if (funcId == "main")
                     moonExecCode += indent("\n")+" $ENTRY\n"
@@ -52,6 +77,53 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val innerTable = global[funcId]?.innerTable
                 if (innerTable != null)
                     traverse(funcBody, innerTable)
+
+                if (funcId != "main")
+                    moonExecCode += indent()+"$JUMP_REGISTER r14\n"
+
+            }
+            NodeLabel.FUNCHEAD.toString() -> {
+                val fparams = node.children[1]
+                traverse(fparams, symTab)
+
+            }
+            NodeLabel.FPARAMS.toString() -> {
+                for (child in node.children)
+                    traverse(child, symTab)
+            }
+            NodeLabel.FPARAM.toString() -> {
+                val paramName = node.children[0].t!!.lexeme
+                val paramType = node.children[1].t!!.lexeme
+                val paramDimList = node.children[2].children
+
+                // get a temp var for the parameter and save it in the symbol table
+                val paramMoonVar = getTempVar()
+                val paramSym = symTab[paramName] as Param
+                paramSym.moonVarName = paramMoonVar
+
+                // calculate the amount of allocations to make in the case of arrays
+                var multDim = 1
+                for (str in paramDimList) {
+                    try {
+                        val parsedInt = str.t!!.lexeme.toInt()
+                        multDim *= parsedInt
+                    } catch (e: NumberFormatException) {
+                        // not a valid int
+                    }
+                }
+
+                // reserve space for the parameter temp variable
+                when (paramType) {
+                    "integer" -> {
+                        moonDataCode += indent(paramMoonVar)+"res ${multDim * INT_SIZE}\n"
+                    }
+                    "float" -> {
+                        moonDataCode += indent(paramMoonVar)+"res ${multDim * FLOAT_SIZE}\n"
+                    }
+                    else -> {
+                        println("unhandle case in VARDECL: $paramName")
+                    }
+                }
 
             }
             NodeLabel.FUNCBODY.toString() -> {
@@ -253,7 +325,14 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                             node.moonOffset += intValue * INT_SIZE * strides[i]
                     }
                 }
-                node.moonVarName = varId
+                if (node.moonVarName == ""){
+                    // if the variable being used is a parameter, link it to the parameter moon tempvar
+                    if (symTab.containsKey(varId) && symTab[varId] is Param)
+                        node.moonVarName = (symTab[varId] as Param).moonVarName
+                    else
+                        node.moonVarName = varId // locally declared variable
+                }
+
             }
             NodeLabel.WRITE.toString() -> {
                 // write should only ever have 1 child, warn if not
@@ -412,6 +491,36 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
             NodeLabel.FUNCCALL.toString() -> {
                 // TODO
                 // as functions are read, create and assign labels, find their labels in here and jump-link
+                val funcId = node.children[0].t!!.lexeme
+                val funcAParams = node.children[1].children
+
+
+                val funcScope = global[funcId] ?: return
+                if (funcScope !is semantic.Function)
+                    return
+
+                moonExecCode += indent("\n")+" % function call $funcId\n"
+
+                for (param in funcAParams)
+                    traverse(param, symTab)
+
+                val localRegister = registerPool.removeLast()
+                val offsetRegister = registerPool.removeLast()
+                var counter = 0
+                for ((key,value) in funcScope.innerTable!!) {
+                    if (value is Param) {
+                        val param = funcAParams[counter++]
+
+                        moonExecCode += indent()+"$ADD_I $offsetRegister,r0,${param.moonOffset}\n"
+                        moonExecCode += indent()+"$LOAD_WORD $localRegister,${param.moonVarName}($offsetRegister)\n"
+                        moonExecCode += indent()+"$STORE_WORD ${value.moonVarName}(r0),$localRegister\n"
+                        println("")
+                    }
+                }
+
+                moonExecCode += indent()+"$JUMP_LINK r14,${funcScope.moonLabel}"
+                registerPool.add(offsetRegister)
+                registerPool.add(localRegister)
             }
         }
     }

@@ -9,14 +9,14 @@ class Class(name: String, innerTable: HashMap<String, Entry>, val inherits: List
         return "class | $name : ${inherits.joinToString(", ")}"
     }
 }
-class Function(name: String, innerTable: HashMap<String, Entry>, val parentClass: String?, val visibility: String, val returnType: String, val params: List<Variable>): Entry(name, innerTable) {
+class Function(name: String, innerTable: HashMap<String, Entry>, val parentClass: String?, val visibility: String, val returnType: String, val params: List<Variable>, var moonLabel: String = "", var moonReturnLabel: String = ""): Entry(name, innerTable) {
     override fun toString(): String {
-        return "function | $name | (${params.joinToString(", ")}): $returnType | $visibility"
+        return "function | $name | (${params.joinToString(", ")}): $returnType | $visibility | $moonLabel"
     }
 }
-class Param (name: String, val variable: Variable): Entry(name) {
+class Param (name: String, val variable: Variable, var moonVarName: String = ""): Entry(name) {
     override fun toString(): String {
-        return "param | $name | $variable"
+        return "param | $name | $variable | $moonVarName"
     }
 }
 

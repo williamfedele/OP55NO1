@@ -45,18 +45,19 @@
 // 5.3: |     |  X  |
 //      -------------
 
-/*func print(val: integer) -> void
+func print(val: integer) -> void
 {
     write(val);
-}*/
+}
 
 func main() -> void
 {
   let x: integer;
   let y: integer;
   let z: integer;
-  let w: integer[2][4][3];
-  //y = 1 + 2 * 3;
+  let w: integer[2][2][2];
+  y = 1 + 2 * 3;
+  print(y);
 
   w[0][0][0] = 0;
   w[0][0][1] = 1;
@@ -67,13 +68,13 @@ func main() -> void
   w[1][1][0] = 6;
   w[1][1][1] = 7;
 
-  write(w[0][0][0]);
-  write(w[0][0][1]);
+  print(w[0][0][0]);
+  print(w[0][0][1]);
   write(w[0][1][0]);
   write(w[0][1][1]);
   write(w[1][0][0]);
   write(w[1][0][1]);
-  write(w[1][1][0]);
+  print(w[1][1][0]);
   write(w[1][1][1]);
 
   /*read(x);

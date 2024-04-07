@@ -21,12 +21,31 @@ class AllocationGenerator (val global: HashMap<String, Entry>) {
                 }
 
             }
-            NodeLabel.FUNCDEF.toString() -> {
-
-            }
             NodeLabel.STRUCT.toString() -> {
+                for (child in node.children)
+                    traverse(child, symTab)
+            }
+            NodeLabel.FUNCDEF.toString() -> {
+                for (child in node.children)
+                    traverse(child, symTab)
+            }
+            NodeLabel.FUNCHEAD.toString() -> {
+                println("funchead")
+                val fparams = node.children[1]
+                traverse(fparams, symTab)
+                val returnVal = node.children[2]
+            }
+            NodeLabel.FPARAMS.toString() -> {
+                for (child in node.children)
+                    traverse(child, symTab)
+            }
+            NodeLabel.FPARAM.toString() -> {
 
             }
+            NodeLabel.FUNCBODY.toString() -> {
+                println("funcbody")
+            }
+
         }
     }
 }
