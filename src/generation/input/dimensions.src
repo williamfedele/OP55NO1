@@ -1,0 +1,27 @@
+func print(val: integer) -> void
+{
+    write(val);
+}
+
+func main() -> void
+{
+  let x: integer;
+  let y: integer;
+  let z: integer;
+  let w: integer[3][3][3];
+
+  x = 0;
+  while (x < 3) {
+    y = 0;
+    while (y < 3) {
+      z = 0;
+      while (z < 3) {
+        w[x][y][z] = x+y+z;
+        print(w[x][y][z]);
+        z = z + 1;
+      };
+      y = y + 1;
+    };
+    x = x + 1;
+  };
+}

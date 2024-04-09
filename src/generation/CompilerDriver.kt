@@ -14,7 +14,9 @@ fun main() {
         //File("bubblesort.src"),
         //File("polynomial.src"),
         //File("simplemain.src".split('.')[0]),
-        File("s2.src".split('.')[0])
+        //File("s2.src".split('.')[0]),
+        File("fibonacci.src".split('.')[0]),
+        //File("dimensions.src".split('.')[0])
     )
     for (file: File in files) {
         val parser = Parser (

@@ -59,6 +59,7 @@ func main() -> void
   y = 1 + 2 * 3;
   print(y);
 
+
   w[0][0][0] = 0;
   w[0][0][1] = 1;
   w[0][1][0] = 2;
@@ -77,10 +78,6 @@ func main() -> void
   print(w[1][1][0]);
   write(w[1][1][1]);
 
-  /*read(x);
-  w = 5.3e+5;
-  write(w);
-
   if (x > y + 10)
     then {
       write(x+10);
@@ -91,6 +88,6 @@ func main() -> void
   while (z <= 10) {
     write(z);
     z = z + 1;
-  };*/
+  };
 
 }

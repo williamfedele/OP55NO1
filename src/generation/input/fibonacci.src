@@ -1,0 +1,27 @@
+func print(val: integer) -> void
+{
+    write(val);
+}
+
+func main() -> void
+{
+  let x: integer;
+  let y: integer;
+  let z: integer;
+  let n: integer;
+  let counter: integer;
+
+  x = 0;
+  y = 1;
+  z = y;
+  counter = 0;
+  read(n);
+
+  while (counter < n) {
+    print(z);
+    x = y;
+    y = z;
+    z = x + y;
+    counter = counter + 1;
+  };
+}
