@@ -41,8 +41,8 @@ REPTSTRUCTDECL4,,VISIBILITY MEMBERDECL REPTSTRUCTDECL4,VISIBILITY MEMBERDECL REP
 REPTVARDECL4,,,,,,,,&epsilon,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ARRAYSIZE REPTVARDECL4,,,,,,,,
 REPTVARIABLEORFUNCTIONCALL,,,,&epsilon,,,IDNEST REPTVARIABLEORFUNCTIONCALL,&epsilon,,,,,,,,,,,,,,,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,,,,,,,,,&epsilon
 RETURNTYPE,,,,,,TYPE,,,,,TYPE,TYPE,,,,,,,,,,,,,void A1,,,,,,,,,,,,,,,,,,,,,
-RIGHTRECARITHEXPR,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,ADDOP A1 TERM RIGHTRECARITHEXPR A32 A12,ADDOP A1 TERM RIGHTRECARITHEXPR A32 A12,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,,,,&epsilon,,,,,,,,,ADDOP A1 TERM RIGHTRECARITHEXPR A32 A12
-RIGHTRECTERM,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,MULTOP A1 FACTOR RIGHTRECTERM A13,MULTOP A1 FACTOR RIGHTRECTERM A13,MULTOP A1 FACTOR RIGHTRECTERM A13,&epsilon,,,,,,,,,&epsilon
+RIGHTRECARITHEXPR,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,ADDOP A1 TERM A12 RIGHTRECARITHEXPR A32,ADDOP A1 TERM A12 RIGHTRECARITHEXPR A32,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,,,,&epsilon,,,,,,,,,ADDOP A1 TERM A12 RIGHTRECARITHEXPR A32
+RIGHTRECTERM,,,,&epsilon,,,,&epsilon,,,,,,,,,,,,,,,&epsilon,&epsilon,,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,&epsilon,,MULTOP A1 FACTOR A13 RIGHTRECTERM,MULTOP A1 FACTOR A13 RIGHTRECTERM,MULTOP A1 FACTOR A13 RIGHTRECTERM,&epsilon,,,,,,,,,&epsilon
 SIGN,,,,,,,,,,,,,,,,,,,,,,,minus A1,plus A1,,,,,,,,,,,,,,,,,,,,,,
 STATBLOCK,,,,,,STATEMENT,,&epsilon,,,,,,lcurbr REPTSTATBLOCK1 rcurbr,,STATEMENT,STATEMENT,STATEMENT,STATEMENT,&epsilon,,STATEMENT,,,,,,,,,,,,,,,,,,,,,,,,
 STATEMENT,,,,,,id A1 STATEMENT2 semi,,,,,,,,,,return lpar EXPR A15 rpar semi,write lpar EXPR A14 rpar semi,read lpar VARIABLE A18 rpar semi,while lpar RELEXPR rpar E STATBLOCK A26 A28 semi,,,if lpar RELEXPR rpar then E STATBLOCK A26 else E STATBLOCK A26 A27 semi,,,,,,,,,,,,,,,,,,,,,,,,
