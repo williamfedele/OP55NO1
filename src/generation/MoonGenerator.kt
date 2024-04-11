@@ -273,7 +273,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
 
                 val localRegister = registerPool.removeLast()
 
-                moonDataCode += indent()+"% space for temp variable\n"
+                moonDataCode += indent()+"% space for temp float literal\n"
                 moonDataCode += indent(node.moonVarName)+"$RES $FLOAT_SIZE\n"
 
                 // add float hi 16 bits
@@ -397,9 +397,6 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                         arrShape = localEntry.variable.dim
                         varType = localEntry.variable.type
                     }
-                    //var arrShape;
-                    //if (symTabEntry is Local)
-                    //val arrShape = localEntry.variable.dim
 
                     // n-dimensional arrays are stored in contiguous memory
                     // calculate the stride to ensure we skip over dimensions as we index the array
@@ -425,7 +422,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                             // an int value index is simply added to the accumulatorRegister
                             NodeLabel.INTLIT.toString() -> {
                                 val intValue = varIndiceList[i].t!!.lexeme.toInt()
-                                if (varType == "integer") {
+                                if (varType == "integer" || varType == "float") {
                                     val offset = intValue * INT_SIZE * strides[i]
                                     moonExecCode += indent()+"$ADD_I $accumulatorRegister,$accumulatorRegister,$offset\n"
                                 }

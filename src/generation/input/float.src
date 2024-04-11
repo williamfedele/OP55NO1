@@ -6,11 +6,16 @@
 // ====== main ====== //
 func main() -> void
 {
-  let val: float;
-  val = -4.25;
-  write(val);
-  val = 4.25;
-  write(val);
-  val = 2.5e3;
-  write(val);
+  let floatArr: float[3];
+  let i: integer;
+
+  floatArr[0] = -4.25;
+  floatArr[1] = 4.25;
+  floatArr[2] = 2.5e3;
+
+  i = 0;
+  while (i < 3) {
+    write(floatArr[i]);
+    i = i + 1;
+  };
 }
