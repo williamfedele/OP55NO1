@@ -12,13 +12,14 @@ fun main() {
 
     val files = listOf(
         File("bubblesort"),
-        //File("polynomial"),
         File("simplemain"),
         File("print"),
         File("fibonacci"),
         File("dimensions"),
         File("square"),
-        //File("class")
+        File("float"),
+        //File("class"),
+        //File("polynomial"),
     )
     for (file: File in files) {
         val parser = Parser (

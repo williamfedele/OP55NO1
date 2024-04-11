@@ -1,0 +1,16 @@
+// This file tests the capability to store floating point numbers.
+// Arithmetic and printing was not implemented in time.
+// Each output can be converted to binary,
+//    and subsequently converted from ieee 754 to decimal using online converters.
+
+// ====== main ====== //
+func main() -> void
+{
+  let val: float;
+  val = -4.25;
+  write(val);
+  val = 4.25;
+  write(val);
+  val = 2.5e3;
+  write(val);
+}

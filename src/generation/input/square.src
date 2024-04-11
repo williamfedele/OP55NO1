@@ -4,6 +4,7 @@ func square(input: integer) -> integer
 {
     input = input * input;
     return (input);
+    write(10); // this line will not be executed since return branches back
 }
 
 // ====== main ====== //
