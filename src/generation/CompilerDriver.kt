@@ -11,12 +11,14 @@ fun main() {
     val OUTPUT_DIR = "src/generation/output/"
 
     val files = listOf(
-        File("bubblesort.src".split('.')[0]),
-        //File("polynomial.src"),
-        File("simplemain.src".split('.')[0]),
-        File("print.src".split('.')[0]),
-        File("fibonacci.src".split('.')[0]),
-        File("dimensions.src".split('.')[0])
+        File("bubblesort"),
+        //File("polynomial"),
+        File("simplemain"),
+        File("print"),
+        File("fibonacci"),
+        File("dimensions"),
+        File("square"),
+        //File("class")
     )
     for (file: File in files) {
         val parser = Parser (

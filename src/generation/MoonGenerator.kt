@@ -13,20 +13,20 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
     init {
         FileWriter(outputMoon).use { out -> out.write("") }
     }
-    val lineUp = 8
-    var moonDataCode = ""
-    var moonExecCode = ""
-    val registerPool = ArrayDeque(REGISTERS)
+    private val lineUp = 8
+    private var moonDataCode = ""
+    private var moonExecCode = ""
+    private val registerPool = ArrayDeque(REGISTERS)
 
-    var tempVarCounter = 0
-    var labelCounter = 0
+    private var tempVarCounter = 0
+    private var labelCounter = 0
 
     fun generate(node: Node?) {
         traverse(node, global)
         writeMoon(moonExecCode)
         writeMoon("\n$moonDataCode")
     }
-    private fun traverse(node: Node?, symTab: HashMap<String, Entry>) {
+    private fun traverse(node: Node?, symTab: HashMap<String, Entry>, context: Entry? = null) {
         if (node == null)
             return
         when (node.name) {
@@ -45,6 +45,18 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 }
                 moonExecCode += indent()+"$HALT\n"
             }
+            /*
+            NodeLabel.STRUCT.toString() -> {
+                val structId = node.children[0].t!!.lexeme
+                val inherits = node.children[1].children
+                val structDecls = node.children[2].children
+                for (child in structDecls)
+                    traverse(child, symTab[structId]!!.innerTable!!)
+                println("class")
+            }
+            NodeLabel.STRUCTVARDECL.toString() -> {
+                println("svardecl")
+            }*/
             NodeLabel.FUNCDEF.toString() -> {
                 val funcHead = node.children[0]
                 val funcRet = funcHead.children[2].name
@@ -54,13 +66,13 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
 
                 // get the function from the symbol table and assign a label for calling later
                 val fn = symTab[funcId] as semantic.Function
-                fn.moonLabel = getLabel()+"\n"
+                fn.moonLabel = getLabel()
                 moonExecCode += fn.moonLabel
 
                 // set return temp var
                 // void return type doesn't get assigned a tempvar
                 if (funcRet != "VOID") {
-                    fn.moonReturnLabel = getTempVar()+"\n"
+                    fn.moonReturnLabel = getTempVar()
                     when (funcRet) {
                         "INTEGER" -> {
                             moonDataCode += indent(fn.moonReturnLabel)+"res $INT_SIZE\n"
@@ -71,6 +83,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                         "ID" -> {
                             println("id return variable not allocated")
                         }
+                        else -> {println("unhandled return type in FUNCDEF: $funcRet")}
                     }
                 }
 
@@ -86,7 +99,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 // if called from an impl function, symTab = the classes symtab
                 val innerTable = symTab[funcId]?.innerTable
                 if (innerTable != null)
-                    traverse(funcBody, innerTable)
+                    traverse(funcBody, innerTable, symTab[funcId])
 
                 // if the function is not main, we need to return to the caller
                 // r14 has been assigned my return register
@@ -146,7 +159,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
              */
             NodeLabel.FUNCBODY.toString() -> {
                 for (child: Node in node.children) {
-                    traverse(child, symTab)
+                    traverse(child, symTab, context)
                 }
             }
             /**
@@ -271,11 +284,11 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
              *
              */
             NodeLabel.ADDOP.toString() -> {
-                for (child in node.children)
-                    traverse(child, symTab)
                 node.moonVarName = getTempVar()
 
+                traverse(node.children[0],symTab)
                 val addOp = node.children[1]
+                traverse(node.children[2], symTab)
 
                 val localRegister = registerPool.removeLast()
                 val leftRegister = registerPool.removeLast()
@@ -306,11 +319,10 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 registerPool.add(localRegister)
             }
             NodeLabel.MULTOP.toString() -> {
-                for (child in node.children)
-                    traverse(child, symTab)
                 node.moonVarName = getTempVar()
-
+                traverse(node.children[0], symTab)
                 val multOp = node.children[1]
+                traverse(node.children[2], symTab)
 
                 val localRegister = registerPool.removeLast()
                 val leftRegister = registerPool.removeLast()
@@ -653,6 +665,9 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 if (funcScope !is semantic.Function)
                     return
 
+                // save return label in node for usage in assignstats
+                node.moonVarName = funcScope.moonReturnLabel
+
                 moonExecCode += indent("\n")+" % function call $funcId params\n"
 
                 for (param in funcAParams)
@@ -716,10 +731,36 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                  * else {
                  *    moonExecCode += indent()+"$LOAD_WORD $offsetRegister,${lhs.moonOffsetLocation}(r0)\n"
                  */
-                moonExecCode += indent()+"$JUMP_LINK r14,${funcScope.moonLabel}"
+                moonExecCode += indent()+"$JUMP_LINK r14,${funcScope.moonLabel}\n"
                 registerPool.add(offsetRegister)
                 registerPool.add(localRegister)
             }
+            NodeLabel.RETURN.toString() -> {
+                if (context is semantic.Function) {
+                    val returnVar = node.children[0]
+
+                    traverse(returnVar, symTab)
+
+                    val localRegister = registerPool.removeLast()
+                    val offsetRegister = registerPool.removeLast()
+
+                    moonExecCode += indent()+"% resetting registers\n"
+                    moonExecCode += indent()+"$SUB $localRegister,$localRegister,$localRegister\n"
+                    if (returnVar.moonOffsetLocation == "r0") {
+                        moonExecCode += indent()+"$ADD_I $offsetRegister,r0,0\n"
+                    }
+                    else {
+                        moonExecCode += indent() + "$LOAD_WORD $offsetRegister,${returnVar.moonOffsetLocation}(r0)\n"
+                    }
+                    moonExecCode += indent()+"$LOAD_WORD $localRegister,${returnVar.moonVarName}($offsetRegister)\n"
+                    moonExecCode += indent()+"$STORE_WORD ${context.moonReturnLabel}(r0),$localRegister\n"
+
+                    registerPool.add(offsetRegister)
+                    registerPool.add(localRegister)
+                }
+
+            }
+            else -> println("unhandled node type ${node.name}")
         }
     }
 

@@ -1,0 +1,16 @@
+// This file tests calling a function with a parameter, and assigning a variable as the return value.
+
+func square(input: integer) -> integer
+{
+    input = input * input;
+    return (input);
+}
+
+// ====== main ====== //
+func main() -> void
+{
+  let val: integer;
+  read(val);
+  val = square(val);
+  write(val);
+}
