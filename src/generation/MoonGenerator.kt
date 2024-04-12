@@ -2,9 +2,8 @@ package generation
 
 import ast.Node
 import ast.NodeLabel
-import semantic.Entry
-import semantic.Local
-import semantic.Param
+import semantic.*
+import semantic.Function
 import java.io.File
 import java.io.FileWriter
 
@@ -45,18 +44,6 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 }
                 moonExecCode += indent()+"$HALT\n"
             }
-            /*
-            NodeLabel.STRUCT.toString() -> {
-                val structId = node.children[0].t!!.lexeme
-                val inherits = node.children[1].children
-                val structDecls = node.children[2].children
-                for (child in structDecls)
-                    traverse(child, symTab[structId]!!.innerTable!!)
-                println("class")
-            }
-            NodeLabel.STRUCTVARDECL.toString() -> {
-                println("svardecl")
-            }*/
             NodeLabel.FUNCDEF.toString() -> {
                 val funcHead = node.children[0]
                 val funcRet = funcHead.children[2].name
@@ -65,7 +52,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val funcBody = node.children[1]
 
                 // get the function from the symbol table and assign a label for calling later
-                val fn = symTab[funcId] as semantic.Function
+                val fn = symTab[funcId] as Function
                 fn.moonLabel = getLabel()
                 moonExecCode += fn.moonLabel
 
@@ -133,7 +120,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 paramSym.moonVarName = paramMoonVar
 
                 // calculate the amount of allocations to make in the case of arrays
-                var multDim = processDimList(paramDimList)
+                val multDim = Util.processDimList(paramDimList)
                 // if dimension is not provided, it must be an array passed by reference, no reserving
                 if (multDim == 0) {
                     return
@@ -149,7 +136,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                         moonDataCode += indent(paramMoonVar)+" res ${multDim * FLOAT_SIZE}\n"
                     }
                     else -> {
-                        println("unhandle case in VARDECL: $paramName")
+                        println("unhandle case in FPARAM: $paramName")
                     }
                 }
 
@@ -172,22 +159,22 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val varType = node.children[1].t!!.lexeme
                 val dimList = node.children[2].children
 
-                val varMoonName = varId
-                moonDataCode += indent()+"% space for variable $varMoonName\n"
+                moonDataCode += indent() + "% space for variable $varId\n"
 
                 // calculate the amount of allocations to make in the case of arrays
 
-                val multDim = processDimList(dimList)
+                val multDim = Util.processDimList(dimList)
 
                 when (varType) {
                     "integer" -> {
-                        moonDataCode += indent(varMoonName)+" res ${multDim * INT_SIZE}\n"
+                        moonDataCode += indent(varId)+" res ${multDim * INT_SIZE}\n"
                     }
                     "float" -> {
-                        moonDataCode += indent(varMoonName)+" res ${multDim * FLOAT_SIZE}\n"
+                        moonDataCode += indent(varId)+" res ${multDim * FLOAT_SIZE}\n"
                     }
                     else -> {
-                        println("unhandle case in VARDECL: $varType")
+                        val classScope = global[varType] as Class
+                        moonDataCode += indent(varId)+" res ${multDim * classScope.memSize}\n"
                     }
                 }
             }
@@ -364,6 +351,13 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 node.moonVarName = child.moonVarName
             }
             NodeLabel.VARIABLE.toString() -> {
+                if (node.children[0].name == "DOT") {
+                    traverse(node.children[0],symTab)
+                    node.moonVarName = node.children[0].moonVarName
+                    node.moonOffsetLocation = node.children[0].moonOffsetLocation
+                    return
+                }
+
                 val varId = node.children[0].t!!.lexeme
                 val varIndiceList = node.children[1].children
                 val symTabEntry = symTab[varId]
@@ -499,16 +493,6 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 moonExecCode += indent()+"$ADD $offsetRegister,$ZERO_REG,$localRegister\n"
                 moonExecCode += indent()+"$LOAD_WORD $UTIL_IO_REG,${child.moonVarName}($offsetRegister)\n"
                 moonExecCode += indent()+"$JUMP_LINK $UTIL_JUMP_REG, putint\n"
-                /*
-                if (node.floatExpMoonVarName == "unset") {
-
-                }
-                else {
-                    // float value, convert back to decimal and combine with exponent tempvar
-                    moonExecCode += indent("\n")+" % printing an int ${child.moonVarName}\n"
-
-                }
-                */
 
                 // output a newline
                 moonExecCode += indent()+"$ADD_I $UTIL_IO_REG,$ZERO_REG,cr\n"
@@ -662,7 +646,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 val funcAParams = node.children[1].children
 
                 val funcScope = global[funcId] ?: return
-                if (funcScope !is semantic.Function)
+                if (funcScope !is Function)
                     return
 
                 // save return label in node for usage in assignstats
@@ -729,7 +713,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 registerPool.add(localRegister)
             }
             NodeLabel.RETURN.toString() -> {
-                if (context is semantic.Function) {
+                if (context is Function) {
                     val returnVar = node.children[0]
                     traverse(returnVar, symTab)
 
@@ -765,6 +749,44 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                 node.moonOffsetLocation = node.children[0].moonOffsetLocation
 
             }
+            NodeLabel.STRUCT.toString() -> {
+                // TODO
+            }
+            NodeLabel.IMPLDEF.toString() -> {
+                // TODO
+            }
+            NodeLabel.DOT.toString() -> {
+                for (child in node.children)
+                    traverse(child, symTab)
+                val lhs = node.children[0]
+                val rhs = node.children[1]
+                var rhsName = ""
+                if (rhs.name == "ID"){
+                    rhsName = rhs.t!!.lexeme
+                }
+                else
+                    rhsName = rhs.moonVarName
+
+                node.moonVarName = lhs.moonVarName
+
+                val varScope = symTab[lhs.moonVarName]
+                if (varScope is Local) {
+                    val varType = varScope.variable.type
+                    val classScope = global[varType]
+                    if (classScope is Class) {
+                        val dataMemberScope = classScope.innerTable?.get(rhsName)
+                        if (dataMemberScope is Data) {
+                            node.moonOffsetLocation = getTempVar()
+                            val offsetRegister = registerPool.removeLast()
+                            moonDataCode += indent()+"% space for temp indice\n"
+                            moonDataCode += indent(node.moonOffsetLocation)+"$RES 4\n"
+                            moonExecCode += indent()+"$ADD_I $offsetRegister,$ZERO_REG,${dataMemberScope.memOffset}\n"
+                            moonExecCode += indent()+"$STORE_WORD ${node.moonOffsetLocation}($ZERO_REG),$offsetRegister\n"
+                            registerPool.add(offsetRegister)
+                        }
+                    }
+                }
+            }
             else -> println("unhandled node type ${node.name}")
         }
     }
@@ -783,22 +805,6 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
 
     private fun indent(s: String = ""): String {
         return s.padEnd(lineUp)
-    }
-
-    private fun processDimList(dimlist: List<Node>): Int {
-        var multDim = 1
-        for (str in dimlist) {
-            if (str.name == NodeLabel.EMPTY.toString()) {
-                return 0
-            }
-            try {
-                val parsedInt = str.t!!.lexeme.toInt()
-                multDim *= parsedInt
-            } catch (e: NumberFormatException) {
-                // not a valid int
-            }
-        }
-        return multDim
     }
 
     private fun getArraySize(dimList: MutableList<String>): Int {

@@ -18,7 +18,7 @@ fun main() {
         File("dimensions"),
         File("square"),
         File("float"),
-        //File("class"),
+        File("objects"),
         //File("polynomial"),
     )
     for (file: File in files) {
@@ -40,6 +40,11 @@ fun main() {
             )
             symtabCreator.create(ast.getRoot())
             symtabCreator.dfs()
+
+            val allocationCalculator = AllocationCalculator(
+                global = symtabCreator.global
+            )
+            allocationCalculator.traverse(ast.getRoot())
 
             val moonGenerator = MoonGenerator(
                 global = symtabCreator.global,

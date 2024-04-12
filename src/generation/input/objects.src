@@ -1,0 +1,48 @@
+// This file tests object types and arrays of objects having simple or array members.
+
+// ====== struct declarations ====== //
+struct SUBSTRUCT {
+    private let x: integer;
+    private let z: integer[2];
+};
+
+struct MYSTRUCT {
+    private let a: float;
+    private let b: integer;
+    private let c: integer[4];
+    private let d: SUBSTRUCT;
+    private let e: SUBSTRUCT[5];
+};
+
+// ====== main ====== //
+func main() -> void
+{
+  let s: MYSTRUCT;
+  let arr: MYSTRUCT[4];
+
+  // simple member
+  s.a = 1.5;
+  write(s.a);
+  s.b = 15;
+  write(s.b);
+
+  // simple member of an object array
+  arr[1].b = 1;
+  write(arr[1].b);
+
+  // array member of object array
+  arr[1].c[0] = 2;
+  write(arr[1].c[0]);
+
+  // accessing simple member of object member of object
+  s.d.x = 3;
+  write(s.d.x);
+
+  // accessing array member of object member of object
+  s.d.z[1] = 4;
+  write(s.d.z[1]);
+
+  // accessing array member of object array member of object
+  s.e[4].z[1] = 5;
+  write(s.e[4].z[1]);
+}

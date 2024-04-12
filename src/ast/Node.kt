@@ -10,7 +10,6 @@ data class Node(val name: String, var parent: Node? = null, var t: Token? = null
 
     var moonVarName: String = ""
     var moonOffsetLocation: String = "r0"
-    //var floatExpMoonVarName: String = "unset"
 
     // Adding a child node to a parent
     fun addChild(child: Node) {
