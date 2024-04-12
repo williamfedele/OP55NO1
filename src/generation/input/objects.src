@@ -47,6 +47,6 @@ func main() -> void
   write(s.e[4].z[0]);
 
   // very complex
-  s.e[s.d.z[arr[1].b]].z[arr[1].b] = 6;
+  s.e[s.d.z[arr[1].b]].z[arr[1].b] = s.e[4].z[0]+1;
   write(s.e[4].z[1]);
 }
