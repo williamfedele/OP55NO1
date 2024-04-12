@@ -430,7 +430,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                                 if (varIndiceList[i].moonOffsetLocation == ZERO_REG) {
                                     moonExecCode += indent()+"$ADD $offsetRegister,$ZERO_REG,${varIndiceList[i].moonOffsetLocation}\n"
                                 } else {
-                                    moonExecCode += indent()+"$LOAD_WORD $offsetRegister,${varIndiceList[i].moonOffsetLocation},($ZERO_REG)\n"
+                                    moonExecCode += indent()+"$LOAD_WORD $offsetRegister,${varIndiceList[i].moonOffsetLocation}($ZERO_REG)\n"
                                 }
 
                                 // load the variable with offset applied

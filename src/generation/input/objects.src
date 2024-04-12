@@ -43,6 +43,10 @@ func main() -> void
   write(s.d.z[1]);
 
   // accessing array member of object array member of object
-  s.e[4].z[1] = 5;
+  s.e[4].z[0] = 5;
+  write(s.e[4].z[0]);
+
+  // very complex
+  s.e[s.d.z[arr[1].b]].z[arr[1].b] = 6;
   write(s.e[4].z[1]);
 }
