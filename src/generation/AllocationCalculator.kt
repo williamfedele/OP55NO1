@@ -62,7 +62,7 @@ class AllocationCalculator (val global: HashMap<String, Entry>) {
                     "INTEGER" -> {
                         varScope.memSize = arrSize * INT_SIZE
                     }
-                    else -> {println("unhandled vardecl type in allocation calculator.")}
+                    else -> {}
                 }
             }
         }

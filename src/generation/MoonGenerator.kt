@@ -787,7 +787,7 @@ class MoonGenerator (val global: HashMap<String, Entry>, val outputMoon: File) {
                     }
                 }
             }
-            else -> println("unhandled node type ${node.name}")
+            else -> {}
         }
     }
 
