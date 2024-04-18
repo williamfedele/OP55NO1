@@ -20,9 +20,9 @@ fun main(args: Array<String>) {
      * All files: bubblesort, objects, simplemain, print, fibonacci, dimensions, square, float
      */
 
-    val GRAMMAR_DIR = "src/parser/grammar/"
-    val INPUT_DIR = "src/generation/input/"
-    val OUTPUT_DIR = "src/generation/output/"
+    val GRAMMAR_DIR = "src/grammar/"
+    val INPUT_DIR = "src/input/"
+    val OUTPUT_DIR = "src/"
 
     val parser = Parser (
         srcFile = File("$INPUT_DIR$file.src"),
