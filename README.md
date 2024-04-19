@@ -1,20 +1,32 @@
 # Compiler Design Project
 
+The project was named after my favourite Chopin Nocturne. Since the final stage of the compiler is code generation into our imaginary processor called MOON, I thought it fit.
+
 This is an incomplete compiler for a custom language created for a compiler design university course.
 
 Functionality not implemented:
 - Floating point arithmetic
 - Struct member function calling
+- Recursive and nested free function calls
 
+# Phases
 ## Lexer
 
 This phase extracts individual tokens from the provided source file.
 
-| **Datatype** |                                    |
-|--------------|------------------------------------|
-| id           | letter alphanum*                   |
-| integer      | nonzero digit* \| 0                |
-| float        | integer fraction [e[+\|−] integer] |
+**Atomic Elements**
+
+*Bold = datatype*
+|             |                                    |
+|-------------|------------------------------------|
+| digit       | 0..9                               |
+| nonzero     | 1..9                               |
+| letter      | a..z | A..Z                        |
+| fraction    | .digit* nonzero | .0               |
+| alphanum    | letter | digit | _                 |
+| **id**      | letter alphanum*                   |
+| **integer** | nonzero digit* \| 0                |
+| **float**   | integer fraction [e[+\|−] integer] |
 
 
  **Operators and Reserved Words** 
