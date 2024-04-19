@@ -61,7 +61,7 @@ The primary goal of this phase is to create a symbol table representing the indi
 
 There are also numerous semantic checks performed such as repeated variable declarations in the same scope, undeclared member functions, etc. Semantic type checking was not implemented.
 
-## Moon Code Generation
+## MOON Translation
 
 The final phase generates code that be executed by the provided MOON processor. The AST is traversed once more, this time to generate moon code as constructs are processed. 
 
