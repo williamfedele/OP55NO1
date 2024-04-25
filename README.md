@@ -63,7 +63,9 @@ There are also numerous semantic checks performed such as repeated variable decl
 
 ## MOON Translation
 
-The final phase generates code that be executed by the provided MOON processor. The AST is traversed once more, this time to generate moon code as constructs are processed. 
+The final phase generates code that be executed by the provided MOON processor. This simulator was developed by the late Peter Grogono during his time at Montreal's Concordia University.
+
+The AST is traversed once more, this time to generate moon code as constructs are processed. 
 
 This was implemented as label-based instead of stack-based for simplicity, though there are a few limitations created. The most obvious being the inability to have repeated variable names in the source file.
 
